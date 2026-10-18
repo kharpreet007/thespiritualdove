@@ -5,10 +5,12 @@ import Icon from '../../components/Icon.astro';
 import PlaceCard from '../../components/PlaceCard.astro';
 import StoryCard from '../../components/StoryCard.astro';
 import SampleNotice from '../../components/SampleNotice.astro';
-import Placeholder from '../../components/Placeholder.astro';
 import PlaceLocation from '../../components/PlaceLocation.astro';
 import PlaceStay from '../../components/PlaceStay.astro';
 import PlaceTransport from '../../components/PlaceTransport.astro';
+import PlaceItinerary from '../../components/PlaceItinerary.astro';
+import PlaceGallery from '../../components/PlaceGallery.astro';
+import { findStopPhoto } from '../../lib/content';
 import { getPlaces, getStories, formatLocation, slugify, type Place } from '../../lib/content';
 
 export async function getStaticPaths() {
@@ -36,13 +38,19 @@ const practicalRows = [
 ] as const;
 
 const city = d.city ?? d.title;
+const hasItinerary = d.itinerary.length > 0;
+const galleryItems = hasItinerary
+  ? d.itinerary.flatMap((day) => day.stops.map((s) => ({ ...s, day: day.day })))
+  : d.highlights.map((h) => ({ name: h.title }));
+const hasPhotos = galleryItems.some((g) => ('photos' in g && g.photos?.length) || findStopPhoto(place.id, g.name));
+const showGallery = galleryItems.length > 0 && (hasItinerary || hasPhotos);
 const toc = [
   { id: 'about', label: 'Introduction' },
   { id: 'location', label: 'Location' },
   { id: 'history', label: 'History & culture' },
   ...(d.significance ? [{ id: 'significance', label: 'Spiritual significance' }] : []),
-  { id: 'experience', label: 'My experience' },
-  { id: 'see', label: 'Things to see' },
+  ...(hasItinerary || d.highlights.length ? [{ id: 'see', label: hasItinerary ? 'Itinerary' : 'Things to see' }] : []),
+  ...(showGallery ? [{ id: 'gallery', label: 'Gallery' }] : []),
   { id: 'hotels', label: 'Where to stay' },
   ...(d.transport.length ? [{ id: 'transport', label: 'Transportation' }] : []),
   { id: 'visit', label: 'Plan your visit' },
@@ -58,6 +66,7 @@ const toc = [
       <p class="place__loc"><Icon name="pin" size={18} /> {formatLocation(d)}</p>
       <nav class="quick" aria-label="Jump to">
         <a class="pill" href="#location"><Icon name="map" size={16} /> Location</a>
+        {(hasItinerary || d.highlights.length > 0) && <a class="pill" href="#see"><Icon name="route" size={16} /> {hasItinerary ? 'Itinerary' : 'Things to see'}</a>}
         <a class="pill" href="#hotels"><Icon name="bed" size={16} /> Hotels</a>
         {d.transport.length > 0 && <a class="pill" href="#transport"><Icon name="train" size={16} /> Transportation</a>}
       </nav>
@@ -97,38 +106,35 @@ const toc = [
           )
         }
 
-        <section id="experience" class="place__section">
-          <h2>My experience</h2>
-          {
-            d.personalNotes ? (
-              <div class="place__personal">
-                {d.personalNotes.split(/\n\n+/).map((para) => <p>{para}</p>)}
-              </div>
-            ) : (
-              <Placeholder label="Personal experience — add your own notes">
-                <p>
-                  Share what it felt like to be here: the moment you arrived, what you noticed, a conversation or ritual that stayed
-                  with you, and what you took home within you. Add this to the <code>personalNotes</code> field in
-                  <code>src/content/places/{place.id}.md</code>.
-                </p>
-              </Placeholder>
+        {
+          hasItinerary ? (
+            <section id="see" class="place__section">
+              <h2>Suggested itinerary</h2>
+              <PlaceItinerary days={d.itinerary} note={d.itineraryNote} />
+            </section>
+          ) : (
+            d.highlights.length > 0 && (
+              <section id="see" class="place__section">
+                <h2>Things to see &amp; experience</h2>
+                <ul class="highlights">
+                  {d.highlights.map((h, i) => (
+                    <li>
+                      <span class="highlights__num">{String(i + 1).padStart(2, '0')}</span>
+                      <h3>{h.title}</h3>
+                      <p>{h.text}</p>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             )
-          }
-        </section>
+          )
+        }
 
         {
-          d.highlights.length > 0 && (
-            <section id="see" class="place__section">
-              <h2>Things to see &amp; experience</h2>
-              <ul class="highlights">
-                {d.highlights.map((h, i) => (
-                  <li>
-                    <span class="highlights__num">{String(i + 1).padStart(2, '0')}</span>
-                    <h3>{h.title}</h3>
-                    <p>{h.text}</p>
-                  </li>
-                ))}
-              </ul>
+          showGallery && (
+            <section id="gallery" class="place__section">
+              <h2>Gallery</h2>
+              <PlaceGallery placeId={place.id} placeName={d.title} items={galleryItems} verified={d.practical.verified} />
             </section>
           )
         }
@@ -344,18 +350,6 @@ const toc = [
     font-size: var(--step-2);
     line-height: 1.45;
     color: var(--ink);
-  }
-  .place__personal p {
-    font-family: var(--font-serif);
-    font-size: 1.35rem;
-    line-height: 1.6;
-    font-style: italic;
-  }
-  .place__section code {
-    font-size: 0.85em;
-    background: rgba(181, 97, 47, 0.08);
-    padding: 0.1em 0.35em;
-    border-radius: 4px;
   }
 
   .highlights {

@@ -25,7 +25,6 @@ history: >-
 significance: >-
   The temple has entrances on all four sides, often understood as a sign of openness to people from every direction
   and background. Its langar, a free community kitchen, serves meals to visitors regardless of faith, caste or status.
-personalNotes: ''
 highlights:
   - title: Harmandir Sahib (Golden Temple)
     text: The heart of the city, open to visitors of every faith at almost any hour.

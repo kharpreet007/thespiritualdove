@@ -72,6 +72,7 @@ const [leadStory, ...moreStories] = featuredStories;
           <p>Sacred sites, heritage towns and peaceful landscapes — each with a story worth discovering.</p>
         </div>
         <div class="section-head__actions">
+          {places.length > 1 && (
           <div class="carousel__nav" role="group" aria-label="Scroll places">
             <button type="button" class="carousel__btn" data-carousel-prev aria-label="Previous places">
               <Icon name="arrow-left" size={20} />
@@ -80,6 +81,7 @@ const [leadStory, ...moreStories] = featuredStories;
               <Icon name="arrow-right" size={20} />
             </button>
           </div>
+          )}
           <a class="btn btn--ghost" href="/places/">View all places</a>
         </div>
       </div>

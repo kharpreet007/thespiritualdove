@@ -1,4 +1,6 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 
 export type Place = CollectionEntry<'places'>;
 export type Story = CollectionEntry<'stories'>;
@@ -28,4 +30,17 @@ export function formatDate(d: Date): string {
 
 export function slugify(s: string): string {
   return s.toLowerCase().replace(/&/g, 'and').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+/**
+ * Looks for a gallery photo at public/images/places/<placeId>/<slug-of-stop-name>.(jpg|jpeg|png|webp).
+ * Returns its public URL, or undefined when no photo has been added yet.
+ */
+export function findStopPhoto(placeId: string, stopName: string): string | undefined {
+  const slug = slugify(stopName);
+  for (const ext of ['jpg', 'jpeg', 'png', 'webp']) {
+    const file = join(process.cwd(), 'public', 'images', 'places', placeId, `${slug}.${ext}`);
+    if (existsSync(file)) return `/images/places/${placeId}/${slug}.${ext}`;
+  }
+  return undefined;
 }

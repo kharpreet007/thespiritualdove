@@ -9,7 +9,6 @@ cover:
   scene: lamp
   alt: A single oil lamp glowing over dark water under a starry sky
 places:
-  - amritsar
   - vrindavan
 tags: [sacred places, reflection]
 ---

@@ -50,9 +50,31 @@ const places = defineCollection({
     intro: z.string(),
     history: z.string(),
     significance: z.string().optional(),
-    // Your own notes from visiting. Leave empty to show an editable placeholder.
-    personalNotes: z.string().optional(),
     highlights: z.array(z.object({ title: z.string(), text: z.string() })).default([]),
+    // Day-by-day plan. When present it replaces `highlights` on the page and feeds the photo gallery.
+    itinerary: z
+      .array(
+        z.object({
+          day: z.string(),
+          stops: z.array(
+            z.object({
+              name: z.string(),
+              note: z.string().optional(),
+              // Photos for this stop. The first one is the cover shown on the gallery tile.
+              // If omitted, a single photo named after the stop is picked up automatically.
+              // A photo can instead be a short video: set `video` to the file and `src` to its poster image.
+              photos: z.array(z.object({ src: z.string(), caption: z.string().optional(), video: z.string().optional() })).optional(),
+              // Visitor guide shown when the stop's gallery photo is opened. All parts are optional.
+              find: z.array(z.string()).optional(), // What you'll find there
+              visit: z.string().optional(), // How to visit
+              matters: z.string().optional(), // Why it matters
+              expect: z.string().optional(), // What to expect on arrival
+            })
+          ),
+        })
+      )
+      .default([]),
+    itineraryNote: z.string().optional(),
     // Map pin. Find coordinates by right-clicking the spot in Google Maps.
     coordinates: z.object({ lat: z.number(), lng: z.number() }),
     address: z.string().optional(),
