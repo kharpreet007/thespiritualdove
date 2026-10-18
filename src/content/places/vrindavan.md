@@ -9,10 +9,10 @@ excerpt: A town of temples, chanting and narrow lanes on the banks of the Yamuna
 featured: true
 sample: true
 cover:
-  image: /images/places/vrindavan.jpg
-  focus: 50% 24%
+  image: /images/places/vrindavan-cover.jpg
+  focus: 50% 35%
   scene: yamuna
-  alt: A grand temple lit in gold and pink at night, seen across a tiled walkway
+  alt: Prem Mandir lit up in pink and white at night, with crowds of visitors at its entrance
 intro: >-
   Vrindavan is a small town in the Mathura district of Uttar Pradesh, on the banks of the Yamuna. It is filled with
   temples, ashrams and bhajan halls, and from early morning its lanes echo with chanting and the greeting "Radhe Radhe".
