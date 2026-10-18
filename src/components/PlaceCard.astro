@@ -1,0 +1,147 @@
+---
+import Cover from './Cover.astro';
+import Icon from './Icon.astro';
+import { formatLocation, slugify, type Place } from '../lib/content';
+
+interface Props {
+  place: Place;
+  headingLevel?: 'h2' | 'h3';
+}
+const { place, headingLevel = 'h3' } = Astro.props;
+const d = place.data;
+const href = `/places/${place.id}/`;
+const Heading = headingLevel;
+---
+<article
+  class="place-card"
+  data-place-card
+  data-category={slugify(d.category)}
+  data-state={slugify(d.state)}
+  data-search={`${d.title} ${d.city ?? ''} ${d.state} ${d.country} ${d.region} ${d.category}`.toLowerCase()}
+>
+  <a href={href} class="place-card__media" tabindex="-1" aria-hidden="true">
+    <Cover cover={d.cover} ratio="4 / 3" />
+    <span class="place-card__badge">{d.category}</span>
+  </a>
+  <div class="place-card__body">
+    <p class="place-card__loc">
+      <Icon name="pin" size={14} />
+      {formatLocation(d)}
+    </p>
+    <Heading class="place-card__title"><a href={href}>{d.title}</a></Heading>
+    <p class="place-card__excerpt">{d.excerpt}</p>
+    <div class="place-card__foot">
+      <span class="text-link place-card__cta" aria-hidden="true">Discover Place <Icon name="arrow-right" /></span>
+      <span class="place-card__links">
+        <a href={`${href}#location`}>Location</a>
+        <a href={`${href}#hotels`}>Hotels</a>
+        {d.transport.length > 0 && <a href={`${href}#transport`}>Transport</a>}
+      </span>
+    </div>
+  </div>
+</article>
+
+<style>
+  .place-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease);
+  }
+  .place-card:hover,
+  .place-card:focus-within {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+  }
+  .place-card:hover :global(.cover svg),
+  .place-card:hover :global(.cover img) {
+    transform: scale(1.04);
+  }
+  .place-card__media {
+    position: relative;
+    display: block;
+  }
+  .place-card__badge {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 253, 249, 0.92);
+    backdrop-filter: blur(4px);
+    color: var(--ink);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .place-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 1.4rem 1.5rem 1.6rem;
+  }
+  .place-card__loc {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0 0 0.5rem;
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+  }
+  .place-card__title {
+    font-size: 1.7rem;
+    margin: 0 0 0.6rem;
+  }
+  .place-card__title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  /* Whole card is clickable via the title link. */
+  .place-card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .place-card__title a:focus-visible {
+    outline: none;
+  }
+  .place-card:has(.place-card__title a:focus-visible) {
+    outline: 2px solid var(--saffron);
+    outline-offset: 3px;
+  }
+  .place-card__excerpt {
+    color: var(--ink-soft);
+    font-size: 0.97rem;
+    line-height: 1.65;
+    margin-bottom: 1.2rem;
+  }
+  .place-card__foot {
+    margin-top: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem 1rem;
+  }
+  .place-card__links {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: 0.9rem;
+  }
+  .place-card__links a {
+    font-size: 0.82rem;
+    color: var(--ink-faint);
+    text-decoration: none;
+    padding: 0.3rem 0;
+  }
+  .place-card__links a:hover {
+    color: var(--saffron-deep);
+    text-decoration: underline;
+  }
+</style>

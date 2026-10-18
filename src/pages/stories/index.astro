@@ -1,0 +1,129 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getStories, slugify } from '../../lib/content';
+import { storyCategories } from '../../config/site';
+
+const stories = await getStories();
+const [lead, ...rest] = stories;
+const usedCategories = storyCategories.filter((c) => stories.some((s) => s.data.category === c));
+---
+<BaseLayout
+  title="Stories"
+  description="Travel stories, reflective essays and cultural notes about journeying with curiosity, respect and an open heart."
+>
+  <PageHero
+    eyebrow="The Journal"
+    title="Stories from the Journey"
+    lede="Reflections, cultural stories and lessons from the road — written slowly, for readers who like to travel with curiosity and care."
+  />
+
+  <section class="stories" aria-label="Stories">
+    <div class="container">
+      {lead && <div class="stories__lead"><StoryCard story={lead} layout="wide" headingLevel="h2" /></div>}
+
+      {rest.length === 0 && (
+        <p class="stories__soon"><Icon name="feather" /> More stories are on the way.</p>
+      )}
+      <div class="stories__bar" hidden={rest.length === 0}>
+        <h2 class="stories__bar-title">All stories</h2>
+        <div class="stories__chips" role="group" aria-label="Filter stories by category">
+          <button type="button" class="chip" aria-pressed="true" data-story-filter="">All</button>
+          {usedCategories.map((c) => <button type="button" class="chip" aria-pressed="false" data-story-filter={slugify(c)}>{c}</button>)}
+        </div>
+      </div>
+
+      <div class="grid grid--3" data-story-grid hidden={rest.length === 0}>
+        {rest.map((s) => <StoryCard story={s} headingLevel="h3" />)}
+      </div>
+      <p class="stories__empty" data-story-empty hidden>
+        <Icon name="feather" /> No stories in this category yet — new writing is on its way.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-story-filter]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-story-grid] [data-story-card]')];
+  const empty = document.querySelector<HTMLElement>('[data-story-empty]');
+  const setCat = (cat: string) => {
+    let shown = 0;
+    cards.forEach((c) => {
+      const match = !cat || c.dataset.category === cat;
+      c.hidden = !match;
+      if (match) shown++;
+    });
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.storyFilter === cat)));
+    if (empty) empty.hidden = shown > 0;
+  };
+  chips.forEach((chip) => chip.addEventListener('click', () => setCat(chip.dataset.storyFilter ?? '')));
+  const initial = new URLSearchParams(location.search).get('category');
+  if (initial && chips.some((c) => c.dataset.storyFilter === initial)) setCat(initial);
+</script>
+
+<style>
+  .stories {
+    padding-bottom: clamp(4rem, 9vw, 7rem);
+  }
+  .stories__lead {
+    padding: clamp(1rem, 3vw, 2rem) 0 clamp(3rem, 6vw, 4.5rem);
+    margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .stories__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  .stories__bar-title {
+    font-size: var(--step-3);
+    margin: 0;
+  }
+  .stories__chips {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 0.25rem;
+  }
+  @media (min-width: 720px) {
+    .stories__chips {
+      flex-wrap: wrap;
+    }
+  }
+  :global([data-story-card][hidden]) {
+    display: none !important;
+  }
+  .stories__soon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    color: var(--ink-soft);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.3rem;
+    margin: 0;
+  }
+  .stories__bar[hidden],
+  [data-story-grid][hidden] {
+    display: none;
+  }
+  .stories__empty {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    justify-content: center;
+    padding: 3rem 1rem;
+    color: var(--ink-soft);
+  }
+  .stories__empty[hidden] {
+    display: none;
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+/** Simple editorial page header used on inner pages. */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lede?: string;
+}
+const { eyebrow, title, lede } = Astro.props;
+---
+<section class="page-hero">
+  <div class="container page-hero__inner">
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h1>{title}</h1>
+    {lede && <p class="lede">{lede}</p>}
+    <slot />
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    padding: clamp(3.5rem, 8vw, 6.5rem) 0 clamp(2rem, 4vw, 3rem);
+    text-align: center;
+    background:
+      radial-gradient(60% 80% at 50% 0%, #f1e2cf 0%, transparent 70%),
+      var(--paper);
+  }
+  .page-hero__inner {
+    max-width: 820px;
+  }
+  .page-hero .eyebrow {
+    justify-content: center;
+  }
+  .page-hero h1 {
+    font-size: var(--step-5);
+    margin-bottom: 0.35em;
+  }
+  .page-hero .lede {
+    max-width: 56ch;
+    margin-inline: auto;
+  }
+</style>

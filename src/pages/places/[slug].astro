@@ -1,0 +1,530 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Cover from '../../components/Cover.astro';
+import Icon from '../../components/Icon.astro';
+import PlaceCard from '../../components/PlaceCard.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import SampleNotice from '../../components/SampleNotice.astro';
+import Placeholder from '../../components/Placeholder.astro';
+import PlaceLocation from '../../components/PlaceLocation.astro';
+import PlaceStay from '../../components/PlaceStay.astro';
+import PlaceTransport from '../../components/PlaceTransport.astro';
+import { getPlaces, getStories, formatLocation, slugify, type Place } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const places = await getPlaces();
+  return places.map((place) => ({ params: { slug: place.id }, props: { place } }));
+}
+
+const { place } = Astro.props as { place: Place };
+const d = place.data;
+const allPlaces = await getPlaces();
+const stories = await getStories();
+
+const relatedStories = stories.filter((s) => s.data.places.includes(place.id)).slice(0, 3);
+let nearby = d.nearby.map((id) => allPlaces.find((p) => p.id === id)).filter((p): p is Place => Boolean(p));
+if (nearby.length < 3) {
+  const extra = allPlaces.filter((p) => p.id !== place.id && !nearby.includes(p) && (p.data.region === d.region || p.data.category === d.category));
+  nearby = [...nearby, ...extra].slice(0, 3);
+}
+
+const practicalRows = [
+  { icon: 'route', label: 'How to reach', value: d.practical.howToReach },
+  { icon: 'calendar', label: 'Best time to visit', value: d.practical.bestTime },
+  { icon: 'clock', label: 'Opening hours', value: d.practical.timings },
+  { icon: 'ticket', label: 'Entry & requirements', value: d.practical.entry },
+] as const;
+
+const city = d.city ?? d.title;
+const toc = [
+  { id: 'about', label: 'Introduction' },
+  { id: 'location', label: 'Location' },
+  { id: 'history', label: 'History & culture' },
+  ...(d.significance ? [{ id: 'significance', label: 'Spiritual significance' }] : []),
+  { id: 'experience', label: 'My experience' },
+  { id: 'see', label: 'Things to see' },
+  { id: 'hotels', label: 'Where to stay' },
+  ...(d.transport.length ? [{ id: 'transport', label: 'Transportation' }] : []),
+  { id: 'visit', label: 'Plan your visit' },
+  { id: 'etiquette', label: 'Responsible travel' },
+];
+---
+<BaseLayout title={d.title} description={d.excerpt} type="article">
+  <article class="place">
+    <header class="place__header container">
+      <a class="back-link" href="/places/"><Icon name="arrow-left" size={16} /> Back to Places</a>
+      <a class="tag" href={`/places/?category=${slugify(d.category)}`}>{d.category}</a>
+      <h1>{d.title}</h1>
+      <p class="place__loc"><Icon name="pin" size={18} /> {formatLocation(d)}</p>
+      <nav class="quick" aria-label="Jump to">
+        <a class="pill" href="#location"><Icon name="map" size={16} /> Location</a>
+        <a class="pill" href="#hotels"><Icon name="bed" size={16} /> Hotels</a>
+        {d.transport.length > 0 && <a class="pill" href="#transport"><Icon name="train" size={16} /> Transportation</a>}
+      </nav>
+    </header>
+
+    <div class="container">
+      <figure class="place__cover">
+        <Cover cover={d.cover} ratio="16 / 9" eager />
+        {d.cover.credit && <figcaption>{d.cover.credit}</figcaption>}
+      </figure>
+    </div>
+
+    <div class="container place__layout">
+      <div class="place__main">
+        {d.sample && <SampleNotice kind="place" />}
+
+        <section id="about" class="place__section">
+          <p class="lede place__intro">{d.intro}</p>
+        </section>
+
+        <section id="location" class="place__section">
+          <h2>Location</h2>
+          <PlaceLocation name={d.title} address={d.address} location={formatLocation(d)} coordinates={d.coordinates} />
+        </section>
+
+        <section id="history" class="place__section">
+          <h2>History &amp; cultural context</h2>
+          <p>{d.history}</p>
+        </section>
+
+        {
+          d.significance && (
+            <section id="significance" class="place__section">
+              <h2>Spiritual significance</h2>
+              <p>{d.significance}</p>
+            </section>
+          )
+        }
+
+        <section id="experience" class="place__section">
+          <h2>My experience</h2>
+          {
+            d.personalNotes ? (
+              <div class="place__personal">
+                {d.personalNotes.split(/\n\n+/).map((para) => <p>{para}</p>)}
+              </div>
+            ) : (
+              <Placeholder label="Personal experience — add your own notes">
+                <p>
+                  Share what it felt like to be here: the moment you arrived, what you noticed, a conversation or ritual that stayed
+                  with you, and what you took home within you. Add this to the <code>personalNotes</code> field in
+                  <code>src/content/places/{place.id}.md</code>.
+                </p>
+              </Placeholder>
+            )
+          }
+        </section>
+
+        {
+          d.highlights.length > 0 && (
+            <section id="see" class="place__section">
+              <h2>Things to see &amp; experience</h2>
+              <ul class="highlights">
+                {d.highlights.map((h, i) => (
+                  <li>
+                    <span class="highlights__num">{String(i + 1).padStart(2, '0')}</span>
+                    <h3>{h.title}</h3>
+                    <p>{h.text}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+
+        <section id="hotels" class="place__section">
+          <h2>Where to stay</h2>
+          <PlaceStay city={city} fileId={place.id} stay={d.stay} />
+        </section>
+
+        {
+          d.transport.length > 0 && (
+            <section id="transport" class="place__section">
+              <h2>Transportation</h2>
+              <PlaceTransport city={city} coordinates={d.coordinates} transport={d.transport} />
+            </section>
+          )
+        }
+
+        <section id="visit" class="place__section visit">
+          <h2>Plan your visit</h2>
+          <div class:list={['visit__status', { 'is-verified': d.practical.verified }]}>
+            <Icon name={d.practical.verified ? 'check' : 'info'} size={18} />
+            <p>
+              {
+                d.practical.verified
+                  ? `Details checked${d.practical.lastChecked ? ` on ${d.practical.lastChecked}` : ''}. Conditions can still change, so confirm before you travel.`
+                  : 'General guidance only — not yet verified. Timings, fees and rules change, so always confirm with official sources before visiting.'
+              }
+            </p>
+          </div>
+          <dl class="visit__list">
+            {
+              practicalRows.map(
+                (row) =>
+                  row.value && (
+                    <div class="visit__row">
+                      <dt>
+                        <Icon name={row.icon} size={18} />
+                        {row.label}
+                      </dt>
+                      <dd>{row.value}</dd>
+                    </div>
+                  )
+              )
+            }
+          </dl>
+        </section>
+
+        {
+          d.etiquette.length > 0 && (
+            <section id="etiquette" class="place__section">
+              <h2>Responsible travel &amp; local etiquette</h2>
+              <ul class="etiquette">
+                {d.etiquette.map((e) => (
+                  <li>
+                    <Icon name="leaf" size={18} />
+                    <span>{e}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+      </div>
+
+      <aside class="place__aside" aria-label="Destination summary">
+        <div class="aside-card">
+          <h2 class="aside-card__title">At a glance</h2>
+          <dl>
+            <div><dt>Location</dt><dd>{formatLocation(d)}</dd></div>
+            <div><dt>Region</dt><dd>{d.region}</dd></div>
+            <div><dt>Category</dt><dd>{d.category}</dd></div>
+            <div><dt>Visitor info</dt><dd>{d.practical.verified ? 'Verified' : 'Not yet verified'}</dd></div>
+          </dl>
+        </div>
+        <nav class="aside-card toc" aria-label="On this page">
+          <h2 class="aside-card__title">On this page</h2>
+          <ol>
+            {toc.filter((t) => t.id !== 'see' || d.highlights.length).map((t) => <li><a href={`#${t.id}`}>{t.label}</a></li>)}
+          </ol>
+        </nav>
+      </aside>
+    </div>
+
+    {
+      relatedStories.length > 0 && (
+        <section class="section section--tint related" aria-labelledby="related-stories">
+          <div class="container">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow">Read more</span>
+                <h2 id="related-stories">Related stories</h2>
+              </div>
+            </div>
+            <div class="grid grid--3">
+              {relatedStories.map((s) => <StoryCard story={s} />)}
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      nearby.length > 0 && (
+        <section class="section related" aria-labelledby="nearby">
+          <div class="container">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow">Continue exploring</span>
+                <h2 id="nearby">Nearby &amp; related destinations</h2>
+              </div>
+              <a class="btn btn--ghost" href="/places/"><Icon name="arrow-left" /> Back to Places</a>
+            </div>
+            <div class="grid grid--3">
+              {nearby.map((p) => <PlaceCard place={p} />)}
+            </div>
+          </div>
+        </section>
+      )
+    }
+  </article>
+</BaseLayout>
+
+<style>
+  .place__header {
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+    padding-bottom: 2rem;
+    max-width: 900px;
+    text-align: center;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .back-link:hover {
+    color: var(--saffron-deep);
+  }
+  .place__header .tag {
+    display: block;
+    text-decoration: none;
+    margin-bottom: 0.9rem;
+  }
+  .place__header h1 {
+    font-size: var(--step-5);
+    margin-bottom: 0.4em;
+  }
+  .quick {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.4rem;
+  }
+  .quick :global(svg) {
+    color: var(--saffron);
+  }
+  .place__loc {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .place__cover {
+    margin: 0 0 clamp(2.5rem, 5vw, 4rem);
+    border-radius: calc(var(--radius) * 1.4);
+    overflow: hidden;
+  }
+  @media (max-width: 640px) {
+    .place__cover :global(.cover) {
+      aspect-ratio: 4 / 3;
+    }
+  }
+  .place__cover figcaption {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    padding: 0.6rem 0.2rem 0;
+  }
+  .place__layout {
+    display: grid;
+    gap: 3rem;
+    padding-bottom: clamp(3rem, 7vw, 5rem);
+  }
+  @media (min-width: 980px) {
+    .place__layout {
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 5rem;
+    }
+  }
+  .place__main {
+    max-width: var(--max-prose);
+  }
+  .place__section {
+    padding-top: 2.5rem;
+  }
+  .place__section:first-of-type {
+    padding-top: 1.75rem;
+  }
+  .place__section h2 {
+    font-size: var(--step-3);
+  }
+  .place__section > p {
+    font-size: 1.08rem;
+    color: #3d3832;
+  }
+  .place__section > .place__intro {
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .place__personal p {
+    font-family: var(--font-serif);
+    font-size: 1.35rem;
+    line-height: 1.6;
+    font-style: italic;
+  }
+  .place__section code {
+    font-size: 0.85em;
+    background: rgba(181, 97, 47, 0.08);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+  }
+
+  .highlights {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .highlights {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .highlights li {
+    padding: 1.4rem 1.5rem;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .highlights__num {
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    color: var(--saffron);
+    font-weight: 600;
+  }
+  .highlights h3 {
+    font-size: 1.45rem;
+    margin: 0.35rem 0 0.4rem;
+  }
+  .highlights p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+
+  .visit__status {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    padding: 0.9rem 1.1rem;
+    margin: 1.2rem 0 1.5rem;
+    border-radius: var(--radius-sm);
+    background: #f4efe4;
+    border-left: 3px solid var(--gold);
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+  .visit__status.is-verified {
+    background: var(--sage-soft);
+    border-left-color: var(--sage);
+  }
+  .visit__status :global(svg) {
+    flex: none;
+    margin-top: 0.2rem;
+  }
+  .visit__status p {
+    margin: 0;
+  }
+  .visit__list {
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+  .visit__row {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  @media (min-width: 640px) {
+    .visit__row {
+      grid-template-columns: 210px 1fr;
+      gap: 1.5rem;
+    }
+  }
+  .visit__row dt {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ink);
+  }
+  .visit__row dt :global(svg) {
+    color: var(--saffron);
+  }
+  .visit__row dd {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  .etiquette {
+    list-style: none;
+    padding: 0;
+    margin: 1.2rem 0 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .etiquette li {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    color: #3d3832;
+  }
+  .etiquette :global(svg) {
+    flex: none;
+    margin-top: 0.3rem;
+    color: var(--sage);
+  }
+
+  .place__aside {
+    display: grid;
+    gap: 1.25rem;
+    align-content: start;
+  }
+  @media (min-width: 980px) {
+    .place__aside {
+      position: sticky;
+      top: calc(var(--header-h) + 1.5rem);
+      padding-top: 1.75rem;
+    }
+  }
+  .aside-card {
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .aside-card__title {
+    font: 600 0.72rem/1 var(--font-sans);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 1.1rem;
+  }
+  .aside-card dl {
+    margin: 0;
+    display: grid;
+    gap: 0.9rem;
+  }
+  .aside-card dt {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+  .aside-card dd {
+    margin: 0;
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .toc a {
+    display: block;
+    padding: 0.35rem 0;
+    font-size: 0.93rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .toc a:hover {
+    color: var(--saffron-deep);
+  }
+  @media (max-width: 979px) {
+    .toc {
+      display: none;
+    }
+  }
+</style>

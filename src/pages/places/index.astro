@@ -1,0 +1,223 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import PlaceCard from '../../components/PlaceCard.astro';
+import Icon from '../../components/Icon.astro';
+import { getPlaces, slugify } from '../../lib/content';
+import { placeCategories } from '../../config/site';
+
+const places = await getPlaces();
+const states = [...new Set(places.map((p) => p.data.state))].sort();
+const usedCategories = placeCategories.filter((c) => places.some((p) => p.data.category === c));
+---
+<BaseLayout
+  title="Places"
+  description="Discover sacred places, heritage sites and peaceful landscapes through their stories, traditions and spiritual significance."
+>
+  <PageHero
+    eyebrow="Destinations"
+    title="Places That Leave a Mark"
+    lede="Discover places through their stories, traditions, landscapes, and spiritual significance."
+  />
+
+  <section class="places" aria-label="Destination directory">
+    <div class="container">
+      <form class="filters" role="search" data-filters onsubmit="return false">
+        <div class="filters__row">
+          <div class="filters__search">
+            <label class="visually-hidden" for="place-search">Search destinations</label>
+            <Icon name="search" size={18} />
+            <input
+              class="input"
+              id="place-search"
+              type="search"
+              placeholder="Search by place, city or state"
+              autocomplete="off"
+              data-filter-search
+            />
+          </div>
+          <div class="filters__state">
+            <label class="visually-hidden" for="place-state">Filter by state</label>
+            <select class="select" id="place-state" data-filter-state>
+              <option value="">All states &amp; regions</option>
+              {states.map((s) => <option value={slugify(s)}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+        <div class="filters__chips" role="group" aria-label="Filter by category">
+          <button type="button" class="chip" aria-pressed="true" data-filter-category="">All</button>
+          {
+            usedCategories.map((c) => (
+              <button type="button" class="chip" aria-pressed="false" data-filter-category={slugify(c)}>
+                {c}
+              </button>
+            ))
+          }
+        </div>
+      </form>
+
+      <p class="places__count" aria-live="polite" data-results-count>
+        Showing {places.length} {places.length === 1 ? 'place' : 'places'}
+      </p>
+
+      <div class:list={['grid', places.length <= 2 ? 'grid--2' : 'grid--3']} data-results>
+        {places.map((place) => <PlaceCard place={place} headingLevel="h2" />)}
+      </div>
+
+      <div class="empty" data-empty hidden>
+        <div class="empty__icon" aria-hidden="true"><Icon name="compass" size={30} /></div>
+        <h2>No places match your search</h2>
+        <p>Try a different word, or clear the filters to see every destination.</p>
+        <button type="button" class="btn btn--ghost" data-filter-reset>Clear filters</button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-filters]');
+  const search = document.querySelector<HTMLInputElement>('[data-filter-search]');
+  const stateSel = document.querySelector<HTMLSelectElement>('[data-filter-state]');
+  const chips = [...document.querySelectorAll<HTMLButtonElement>('[data-filter-category]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-place-card]')];
+  const count = document.querySelector<HTMLElement>('[data-results-count]');
+  const empty = document.querySelector<HTMLElement>('[data-empty]');
+  const reset = document.querySelector<HTMLButtonElement>('[data-filter-reset]');
+
+  if (form && search && stateSel && count && empty) {
+    let category = '';
+
+    const params = new URLSearchParams(location.search);
+    search.value = params.get('q') ?? '';
+    stateSel.value = params.get('state') ?? '';
+    category = params.get('category') ?? '';
+    if (!chips.some((c) => c.dataset.filterCategory === category)) category = '';
+
+    const apply = () => {
+      const q = search.value.trim().toLowerCase();
+      const st = stateSel.value;
+      let shown = 0;
+      cards.forEach((card) => {
+        const match =
+          (!q || (card.dataset.search ?? '').includes(q)) &&
+          (!st || card.dataset.state === st) &&
+          (!category || card.dataset.category === category);
+        card.hidden = !match;
+        if (match) shown++;
+      });
+      chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.filterCategory === category)));
+      count.textContent = `Showing ${shown} ${shown === 1 ? 'place' : 'places'}`;
+      empty.hidden = shown !== 0;
+
+      const next = new URLSearchParams();
+      if (q) next.set('q', q);
+      if (st) next.set('state', st);
+      if (category) next.set('category', category);
+      const qs = next.toString();
+      history.replaceState(null, '', qs ? `?${qs}` : location.pathname);
+    };
+
+    search.addEventListener('input', apply);
+    stateSel.addEventListener('change', apply);
+    chips.forEach((chip) =>
+      chip.addEventListener('click', () => {
+        category = chip.dataset.filterCategory ?? '';
+        apply();
+      })
+    );
+    reset?.addEventListener('click', () => {
+      search.value = '';
+      stateSel.value = '';
+      category = '';
+      apply();
+      search.focus();
+    });
+    apply();
+  }
+</script>
+
+<style>
+  .places {
+    padding-bottom: clamp(4rem, 9vw, 7rem);
+  }
+  .filters {
+    display: grid;
+    gap: 1.1rem;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .filters__row {
+    display: grid;
+    gap: 0.75rem;
+  }
+  @media (min-width: 720px) {
+    .filters__row {
+      grid-template-columns: 1fr 260px;
+    }
+  }
+  .filters__search {
+    position: relative;
+  }
+  .filters__search :global(svg) {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-faint);
+    pointer-events: none;
+  }
+  .filters__search .input {
+    padding-left: 2.8rem;
+  }
+  .filters__chips {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: thin;
+  }
+  @media (min-width: 720px) {
+    .filters__chips {
+      flex-wrap: wrap;
+      overflow: visible;
+    }
+  }
+  .places__count {
+    font-size: 0.88rem;
+    color: var(--ink-faint);
+    margin-bottom: 1.5rem;
+  }
+  :global([data-place-card][hidden]) {
+    display: none !important;
+  }
+  .empty {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+  }
+  .empty[hidden] {
+    display: none;
+  }
+  .empty__icon {
+    display: inline-grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--sage-soft);
+    color: var(--sage);
+    margin-bottom: 1rem;
+  }
+  .empty h2 {
+    font-size: var(--step-2);
+  }
+  .empty p {
+    color: var(--ink-soft);
+  }
+</style>

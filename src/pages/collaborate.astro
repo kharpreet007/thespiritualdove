@@ -1,0 +1,465 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Placeholder from '../components/Placeholder.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../config/site';
+
+const types = [
+  {
+    icon: 'pin',
+    title: 'Destination features',
+    text: 'Thoughtful stories and guides about meaningful places, with an emphasis on culture, history and responsible travel.',
+  },
+  {
+    icon: 'leaf',
+    title: 'Retreats & mindful stays',
+    text: 'Retreats, homestays and small properties that respect their surroundings and local communities.',
+  },
+  {
+    icon: 'users',
+    title: 'Tourism & heritage partners',
+    text: 'Tourism boards, heritage organisations and cultural initiatives that want to share places with care.',
+  },
+  {
+    icon: 'pen',
+    title: 'Guest features & interviews',
+    text: 'Guest essays, interviews, podcasts and conversations about travel, culture and meaning.',
+  },
+  {
+    icon: 'camera',
+    title: 'Content partnerships',
+    text: 'Editorial writing and Instagram storytelling for brands whose values align with the journal.',
+  },
+  {
+    icon: 'compass',
+    title: 'Travel-related opportunities',
+    text: 'Anything else that connects travel, culture and reflection. If it feels aligned, write in.',
+  },
+] as const;
+
+const values = [
+  'Collaborations are accepted only when they feel genuinely aligned with the spirit of the journal.',
+  'Sponsored or gifted content is always clearly disclosed.',
+  'Opinions remain honest. Partnership never guarantees a positive review.',
+  'Sacred sites and local communities are portrayed with respect, never as a backdrop for promotion.',
+];
+
+const steps = [
+  { title: 'Reach out', text: 'Share a few details about who you are and what you have in mind.' },
+  { title: 'A conversation', text: 'If the idea feels aligned, we talk through goals, timelines and expectations.' },
+  { title: 'Create with care', text: 'Content is shaped slowly and honestly, with respect for the place and its people.' },
+];
+
+const formAction = site.contactForm.formAction;
+const mode = formAction ? 'endpoint' : site.contactEmail ? 'email' : 'offline';
+---
+<BaseLayout title="Collaborate" description="Collaborations, partnerships, guest features and travel-related opportunities with The Spiritual Dove.">
+  <PageHero
+    eyebrow="Collaborate"
+    title="Let’s Create Something Meaningful"
+    lede="Open to collaborations, partnerships and guest features that share a love of thoughtful, respectful travel."
+  >
+    <div class="hero-actions">
+      <a class="btn btn--primary" href="#contact">Get in touch <Icon name="arrow-right" /></a>
+      <a class="btn btn--ghost" href={site.instagram.url} target="_blank" rel="noopener"><Icon name="instagram" /> {site.instagram.handle}</a>
+    </div>
+  </PageHero>
+
+  <section class="section types" aria-labelledby="types-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <span class="eyebrow">Ways to work together</span>
+          <h2 id="types-title">Collaboration opportunities</h2>
+        </div>
+      </div>
+      <ul class="types__grid">
+        {
+          types.map((t) => (
+            <li class="reveal">
+              <span class="types__icon"><Icon name={t.icon} size={22} /></span>
+              <h3>{t.title}</h3>
+              <p>{t.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="section section--tint" aria-labelledby="values-title">
+    <div class="container values">
+      <div class="reveal">
+        <span class="eyebrow">Values</span>
+        <h2 id="values-title">How collaborations work here</h2>
+        <ul class="values__list">
+          {values.map((v) => <li><Icon name="check" size={18} /><span>{v}</span></li>)}
+        </ul>
+      </div>
+      <div class="reveal">
+        <span class="eyebrow">Audience &amp; reach</span>
+        <h2 class="values__h2">Media kit</h2>
+        <Placeholder label="Add verified details only">
+          <p>
+            Add your audience details here once you have them: Instagram followers, monthly readers, main audience locations and past
+            collaborations. Use only real, current figures, or link to a downloadable media kit.
+          </p>
+        </Placeholder>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="process-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <span class="eyebrow">The process</span>
+          <h2 id="process-title">Simple and personal</h2>
+        </div>
+      </div>
+      <ol class="steps">
+        {
+          steps.map((s, i) => (
+            <li class="reveal">
+              <span class="steps__num">{i + 1}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--tint contact" id="contact" aria-labelledby="contact-title">
+    <div class="container contact__grid">
+      <div class="contact__intro">
+        <span class="eyebrow">Contact</span>
+        <h2 id="contact-title">Start a conversation</h2>
+        <p class="lede">Tell me a little about yourself and your idea. Every message is read personally.</p>
+        <ul class="contact__alt">
+          <li>
+            <Icon name="instagram" />
+            <a href={site.instagram.url} target="_blank" rel="noopener">{site.instagram.handle}</a>
+          </li>
+          {
+            site.contactEmail && (
+              <li>
+                <Icon name="mail" />
+                <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
+              </li>
+            )
+          }
+        </ul>
+      </div>
+
+      <form
+        class="contact__form"
+        data-contact-form
+        data-mode={mode}
+        data-email={site.contactEmail}
+        action={formAction || undefined}
+        method="post"
+      >
+        {
+          mode === 'offline' && (
+            <div class="contact__offline" role="note">
+              <Icon name="info" size={18} />
+              <p>
+                This form isn't connected yet, so messages can't be sent from here. Please reach out on Instagram at{' '}
+                <a href={site.instagram.url} target="_blank" rel="noopener">{site.instagram.handle}</a> for now.
+              </p>
+            </div>
+          )
+        }
+        <div class="contact__row">
+          <div class="field">
+            <label for="c-name">Your name</label>
+            <input class="input" id="c-name" name="name" autocomplete="name" required />
+          </div>
+          <div class="field">
+            <label for="c-email">Email</label>
+            <input class="input" id="c-email" name="email" type="email" autocomplete="email" required />
+          </div>
+        </div>
+        <div class="contact__row">
+          <div class="field">
+            <label for="c-org">Organisation <span class="optional">(optional)</span></label>
+            <input class="input" id="c-org" name="organisation" autocomplete="organization" />
+          </div>
+          <div class="field">
+            <label for="c-type">Type of enquiry</label>
+            <select class="select" id="c-type" name="type">
+              {types.map((t) => <option>{t.title}</option>)}
+              <option>Something else</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="c-message">Message</label>
+          <textarea class="textarea" id="c-message" name="message" required placeholder="Share your idea, timeline and anything else that would be helpful."></textarea>
+        </div>
+        <label class="consent">
+          <input type="checkbox" name="consent" required />
+          <span>I agree that my details may be used to reply to this enquiry, as described in the <a href="/privacy/">Privacy Policy</a>.</span>
+        </label>
+        <button class="btn btn--primary contact__submit" type="submit">
+          {mode === 'email' ? 'Compose email' : 'Send message'} <Icon name="arrow-right" />
+        </button>
+        <p class="contact__status" data-contact-status aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+  const status = form?.querySelector<HTMLElement>('[data-contact-status]');
+  if (form && status) {
+    form.addEventListener('submit', async (e) => {
+      if (!form.checkValidity()) return;
+      e.preventDefault();
+      const mode = form.dataset.mode;
+      const data = new FormData(form);
+
+      if (mode === 'offline') {
+        status.textContent = 'This form is not connected yet, so nothing was sent. Please reach out on Instagram instead.';
+        status.className = 'contact__status is-warn';
+        return;
+      }
+
+      if (mode === 'email') {
+        const subject = `${data.get('type')} — ${data.get('name')}`;
+        const body = `Name: ${data.get('name')}\nEmail: ${data.get('email')}\nOrganisation: ${data.get('organisation') || '-'}\n\n${data.get('message')}`;
+        window.location.href = `mailto:${form.dataset.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        status.textContent = 'Your email app should open with your message ready to send.';
+        status.className = 'contact__status';
+        return;
+      }
+
+      status.textContent = 'Sending…';
+      try {
+        const res = await fetch(form.action, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        status.textContent = 'Thank you. Your message has been sent.';
+        status.className = 'contact__status is-ok';
+      } catch {
+        status.textContent = 'Something went wrong while sending. Please try again, or reach out on Instagram.';
+        status.className = 'contact__status is-warn';
+      }
+    });
+  }
+</script>
+
+<style>
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+  .types__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  }
+  .types__grid li {
+    padding: 1.9rem;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+    transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease);
+  }
+  .types__grid li:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+  .types__icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #f6e6d4;
+    color: var(--saffron-deep);
+    margin-bottom: 1.2rem;
+  }
+  .types__grid h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+  }
+  .types__grid p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.97rem;
+  }
+
+  .values {
+    display: grid;
+    gap: 3rem;
+  }
+  @media (min-width: 900px) {
+    .values {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 5rem;
+    }
+  }
+  .values h2 {
+    font-size: var(--step-3);
+  }
+  .values__list {
+    list-style: none;
+    margin: 1.5rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  .values__list li {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+  }
+  .values__list :global(svg) {
+    flex: none;
+    margin-top: 0.3rem;
+    color: var(--sage);
+  }
+
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  }
+  .steps li {
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--ink);
+  }
+  .steps__num {
+    font-family: var(--font-serif);
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--saffron);
+  }
+  .steps h3 {
+    font-size: 1.6rem;
+    margin: 0.6rem 0 0.4rem;
+  }
+  .steps p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  .contact__grid {
+    display: grid;
+    gap: 2.5rem;
+  }
+  @media (min-width: 960px) {
+    .contact__grid {
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 5rem;
+    }
+  }
+  .contact__intro h2 {
+    font-size: var(--step-4);
+  }
+  .contact__alt {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+    display: grid;
+    gap: 0.8rem;
+  }
+  .contact__alt li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .contact__alt :global(svg) {
+    color: var(--saffron);
+  }
+  .contact__form {
+    display: grid;
+    gap: 1.1rem;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border-radius: calc(var(--radius) * 1.3);
+    background: var(--white);
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .contact__row {
+    display: grid;
+    gap: 1.1rem;
+  }
+  @media (min-width: 640px) {
+    .contact__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .optional {
+    color: var(--ink-faint);
+    font-weight: 400;
+  }
+  .consent {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    font-size: 0.88rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .consent input {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    margin-top: 0.2rem;
+    accent-color: var(--saffron);
+  }
+  .contact__submit {
+    justify-self: start;
+  }
+  @media (max-width: 479px) {
+    .contact__submit {
+      justify-self: stretch;
+    }
+  }
+  .contact__offline {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--radius-sm);
+    background: #fbf1e4;
+    border: 1px solid #ecd5b8;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+  }
+  .contact__offline :global(svg) {
+    flex: none;
+    margin-top: 0.2rem;
+    color: var(--saffron-deep);
+  }
+  .contact__offline p {
+    margin: 0;
+  }
+  .contact__status {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    min-height: 1.4em;
+  }
+  .contact__status.is-ok {
+    color: var(--sage);
+  }
+  .contact__status.is-warn {
+    color: var(--saffron-deep);
+  }
+</style>

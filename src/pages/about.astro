@@ -1,0 +1,411 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Placeholder from '../components/Placeholder.astro';
+import Cover from '../components/Cover.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../config/site';
+
+const philosophy = [
+  {
+    icon: 'compass',
+    title: 'Curiosity',
+    text: 'Exploring the world with open eyes and an open mind, and staying willing to be surprised.',
+  },
+  {
+    icon: 'heart',
+    title: 'Respect for tradition',
+    text: 'Appreciating cultural and spiritual traditions as living practices, not attractions.',
+  },
+  {
+    icon: 'feather',
+    title: 'The story behind the place',
+    text: 'Looking past the postcard view to the history, people and rituals that give a place its meaning.',
+  },
+  {
+    icon: 'sun',
+    title: 'Personal meaning',
+    text: 'Noticing what a journey changes within us, and what we carry home afterwards.',
+  },
+] as const;
+
+const expect = [
+  { icon: 'pin', title: 'Destination guides', text: 'Context, highlights and practical notes for meaningful places.' },
+  { icon: 'pen', title: 'Travel stories', text: 'Personal accounts of journeys, written honestly and slowly.' },
+  { icon: 'leaf', title: 'Reflections', text: 'Essays on stillness, meaning and the lessons that travel offers.' },
+  { icon: 'users', title: 'Culture & traditions', text: 'The rituals, crafts, festivals and communities that shape a place.' },
+] as const;
+
+const principles = [
+  'Learn the customs of a place before arriving, and follow them with care.',
+  'Ask before photographing people, rituals or private spaces.',
+  'Support local guides, homestays, makers and small businesses.',
+  'Travel lightly: reduce waste, avoid single-use plastics, and leave places as they were found.',
+  'Share practical information only after checking it, and say clearly when something is unverified.',
+  'Write about sacred places and beliefs with humility, without speaking over the communities they belong to.',
+];
+---
+<BaseLayout title="About" description="The philosophy behind The Spiritual Dove: travelling with curiosity, respecting traditions, and finding meaning in the journey.">
+  <PageHero
+    eyebrow="About"
+    title="A Journey Beyond Places"
+    lede="The Spiritual Dove is a travel and spirituality journal about exploring the world with curiosity, respecting the traditions we encounter, and finding meaning in the journeys we take."
+  />
+
+  <!-- Author introduction -->
+  <section class="section author" aria-labelledby="author-title">
+    <div class="container author__grid">
+      <div class="author__photo reveal">
+        {
+          site.authorPhoto ? (
+            <img src={site.authorPhoto} alt={site.authorName ? `Portrait of ${site.authorName}` : 'Portrait of the author'} />
+          ) : (
+            <div class="author__photo-placeholder">
+              <Icon name="camera" size={34} />
+              <p><strong>Your photograph</strong>Add a portrait to <code>/public/images/author/</code> and set <code>authorPhoto</code> in <code>src/config/site.ts</code>.</p>
+            </div>
+          )
+        }
+      </div>
+      <div class="author__copy reveal">
+        <span class="eyebrow">{site.authorTitle}</span>
+        <h2 id="author-title">{site.authorName ? `Hello, I’m ${site.authorName}` : 'Hello, and welcome'}</h2>
+        <p class="lede">
+          This is a space for journeys that go a little deeper: to sacred places, heritage towns, quiet landscapes, and the stories
+          that live within them.
+        </p>
+        <Placeholder label="Author introduction — write in your own words">
+          <p>
+            Introduce yourself here: your name, where you are from or based, and what draws you to travel and to spiritual or
+            cultural places. Two or three short paragraphs is plenty. Avoid anything you are not comfortable sharing publicly.
+          </p>
+        </Placeholder>
+      </div>
+    </div>
+  </section>
+
+  <!-- Philosophy -->
+  <section class="section section--tint" aria-labelledby="philosophy-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <span class="eyebrow">The philosophy</span>
+          <h2 id="philosophy-title">Travel as a way of seeing</h2>
+          <p>
+            Travel is more than visiting a destination. It is a chance to discover cultures, understand traditions, connect with
+            nature, and find deeper meaning in everyday life. Spiritual, but never limited to a single path.
+          </p>
+        </div>
+      </div>
+      <ul class="pillars">
+        {
+          philosophy.map((p) => (
+            <li class="reveal">
+              <span class="pillars__icon"><Icon name={p.icon} size={22} /></span>
+              <h3>{p.title}</h3>
+              <p>{p.text}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Why I started -->
+  <section class="section why" aria-labelledby="why-title">
+    <div class="container why__grid">
+      <div class="why__art reveal" aria-hidden="true">
+        <Cover cover={{ scene: 'path', alt: 'A winding path through hills at dawn' }} ratio="4 / 5" />
+      </div>
+      <div class="reveal">
+        <span class="eyebrow">The beginning</span>
+        <h2 id="why-title">Why I started The Spiritual Dove</h2>
+        <Placeholder label="Your story — replace with your own">
+          <p>
+            Share what led you to begin this journal. It might be a particular journey, a question you kept returning to, or a
+            wish to document places in a more thoughtful way. Only include what is true for you.
+          </p>
+          <p>
+            You may also want to explain the name: what the dove means to you, and why it felt right for this space.
+          </p>
+        </Placeholder>
+      </div>
+    </div>
+  </section>
+
+  <!-- What to expect -->
+  <section class="section section--tint" aria-labelledby="expect-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <span class="eyebrow">On these pages</span>
+          <h2 id="expect-title">What readers can expect</h2>
+        </div>
+      </div>
+      <ul class="expect">
+        {
+          expect.map((e) => (
+            <li class="reveal">
+              <Icon name={e.icon} size={22} />
+              <div>
+                <h3>{e.title}</h3>
+                <p>{e.text}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- Responsible travel -->
+  <section class="section" aria-labelledby="respect-title">
+    <div class="container respect">
+      <div class="reveal">
+        <span class="eyebrow">Travelling with care</span>
+        <h2 id="respect-title">A respectful approach to travel</h2>
+        <p class="lede">
+          Sacred places belong first to the people who pray, live and work there. These principles guide how places are visited and
+          written about here.
+        </p>
+        <p class="respect__note">You can edit these principles in <code>src/pages/about.astro</code>.</p>
+      </div>
+      <ol class="respect__list reveal">
+        {principles.map((p) => <li>{p}</li>)}
+      </ol>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" aria-labelledby="cta-title">
+    <div class="container cta__inner reveal">
+      <h2 id="cta-title">Begin exploring</h2>
+      <p>{site.tagline}</p>
+      <div class="cta__actions">
+        <a class="btn btn--primary" href="/places/">Explore Places <Icon name="arrow-right" /></a>
+        <a class="btn btn--ghost" href="/stories/">Read the Stories</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .author {
+    padding-top: clamp(1rem, 3vw, 2rem);
+  }
+  .author__grid,
+  .why__grid {
+    display: grid;
+    gap: clamp(2.5rem, 6vw, 5rem);
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .author__grid {
+      grid-template-columns: 0.85fr 1.15fr;
+    }
+    .why__grid {
+      grid-template-columns: 0.8fr 1.2fr;
+    }
+  }
+  .author__photo {
+    max-width: 420px;
+    width: 100%;
+    margin-inline: auto;
+    aspect-ratio: 4 / 5;
+    border-radius: 999px 999px var(--radius) var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-lift);
+  }
+  .author__photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .author__photo-placeholder {
+    height: 100%;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+    color: var(--ink-soft);
+    border: 1.5px dashed #cdb89c;
+    border-radius: inherit;
+    background:
+      radial-gradient(circle at 50% 35%, #f3e3cf, transparent 60%),
+      var(--paper-2);
+  }
+  .author__photo-placeholder :global(svg) {
+    color: var(--saffron);
+  }
+  .author__photo-placeholder p {
+    font-size: 0.88rem;
+    max-width: 26ch;
+    margin: 0;
+  }
+  .author__photo-placeholder strong {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+  }
+  code {
+    font-size: 0.85em;
+    background: rgba(181, 97, 47, 0.08);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    word-break: break-word;
+  }
+  .author h2,
+  .why h2 {
+    font-size: var(--step-4);
+  }
+  .author .lede {
+    margin-bottom: 1.8rem;
+  }
+  .why h2 {
+    margin-bottom: 1.4rem;
+  }
+  .why__art {
+    max-width: 420px;
+    width: 100%;
+    margin-inline: auto;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .pillars {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  }
+  .pillars li {
+    padding: 1.8rem;
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+  }
+  .pillars__icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #f6e6d4;
+    color: var(--saffron-deep);
+    margin-bottom: 1.2rem;
+  }
+  .pillars h3 {
+    font-size: 1.6rem;
+    margin-bottom: 0.4rem;
+  }
+  .pillars p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 0.97rem;
+  }
+
+  .expect {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+    border-top: 1px solid var(--line);
+  }
+  .expect li {
+    display: flex;
+    gap: 1.2rem;
+    padding: 1.6rem 0.25rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .expect :global(svg) {
+    flex: none;
+    margin-top: 0.35rem;
+    color: var(--sage);
+  }
+  .expect h3 {
+    font-size: 1.55rem;
+    margin-bottom: 0.25rem;
+  }
+  .expect p {
+    margin: 0;
+    color: var(--ink-soft);
+  }
+
+  .respect {
+    display: grid;
+    gap: 2.5rem;
+  }
+  @media (min-width: 900px) {
+    .respect {
+      grid-template-columns: 1fr 1.1fr;
+      gap: 5rem;
+    }
+  }
+  .respect h2 {
+    font-size: var(--step-4);
+  }
+  .respect__note {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+  }
+  .respect__list {
+    list-style: none;
+    counter-reset: p;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0;
+  }
+  .respect__list li {
+    counter-increment: p;
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+    color: #3d3832;
+  }
+  .respect__list li::before {
+    content: counter(p, decimal-leading-zero);
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    color: var(--saffron);
+    line-height: 1.4;
+  }
+
+  .cta {
+    padding-bottom: clamp(4rem, 9vw, 7rem);
+  }
+  .cta__inner {
+    text-align: center;
+    padding: clamp(3rem, 7vw, 5rem) 1.5rem;
+    border-radius: calc(var(--radius) * 1.5);
+    background:
+      radial-gradient(80% 120% at 50% 0%, #f2ddc6 0%, transparent 70%),
+      var(--paper-2);
+  }
+  .cta h2 {
+    font-size: var(--step-4);
+  }
+  .cta p {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: var(--step-2);
+    color: var(--ink-soft);
+    margin-bottom: 2rem;
+  }
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+  }
+</style>

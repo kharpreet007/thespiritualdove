@@ -1,0 +1,34 @@
+---
+interface Props {
+  size?: number;
+  class?: string;
+}
+const { size = 40, class: className } = Astro.props;
+---
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 64 64"
+  fill="none"
+  aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <circle cx="32" cy="32" r="31" stroke="currentColor" stroke-opacity="0.35" stroke-width="1" />
+  <path
+    d="M33 36 C34 25 41 17 54 12 C51 22 45 31 37 37 Z"
+    fill="currentColor"
+    opacity="0.55"
+  />
+  <path
+    d="M12 42 C19 42 27 40 34 36.5 C40 33.5 44 29 47.5 25.5 C49.5 23.5 52 22.3 54.5 22.6 L59 23.6 L55.2 25.4 C53.5 31.5 47.5 38.5 39.5 42.3 C31.5 46 22.5 47 15.5 46.2 L7 50.5 L9.5 44.5 Z"
+    fill="currentColor"
+  />
+  <path
+    d="M27 38 C24.5 27 28.5 15.5 38.5 7 C39.5 17 38.5 27.5 35 36 Z"
+    fill="currentColor"
+  />
+  <circle cx="52.6" cy="24.6" r="1.1" fill="var(--paper, #f8f4ed)" />
+  <path d="M43 44 C45 46 48 47 51 46.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.7" />
+  <path d="M46.5 45.6 C47 44 48.5 43.4 49.5 43.6 C49 45 48 45.7 46.5 45.6 Z" fill="currentColor" opacity="0.7" />
+</svg>

@@ -1,0 +1,457 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Cover from '../components/Cover.astro';
+import PlaceCard from '../components/PlaceCard.astro';
+import StoryCard from '../components/StoryCard.astro';
+import Newsletter from '../components/Newsletter.astro';
+import Icon from '../components/Icon.astro';
+import { getPlaces, getStories } from '../lib/content';
+import { site } from '../config/site';
+
+// To use a photograph in the hero, add it to /public/images and set `image`, e.g. '/images/hero.jpg'.
+const hero = {
+  image: undefined as string | undefined,
+  scene: 'himalaya' as const,
+  alt: 'Layered mountain ridges at sunrise with a small shrine and prayer flags',
+};
+
+const places = (await getPlaces()).slice(0, 6);
+const stories = await getStories();
+const featuredStories = [...stories.filter((s) => s.data.featured), ...stories.filter((s) => !s.data.featured)].slice(0, 4);
+const [leadStory, ...moreStories] = featuredStories;
+---
+<BaseLayout overlayHeader>
+  <!-- A. Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__media">
+      <Cover cover={hero} ratio="auto" eager />
+    </div>
+    <div class="hero__scrim" aria-hidden="true"></div>
+    <div class="container hero__content">
+      <p class="hero__kicker">{site.name} · {site.instagram.handle}</p>
+      <h1 id="hero-title">Every journey brings you closer to something deeper.</h1>
+      <p class="hero__text">Exploring sacred places, discovering local stories, and finding meaning in the journeys we take.</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="/places/">Explore Places <Icon name="arrow-right" /></a>
+        <a class="btn btn--light" href="/stories/">Read the Stories</a>
+      </div>
+    </div>
+    <a class="hero__scroll" href="#intro" aria-label="Scroll to introduction">
+      <span></span>
+    </a>
+  </section>
+
+  <!-- B. Introduction -->
+  <section class="section intro" id="intro" aria-labelledby="intro-title">
+    <div class="container intro__inner">
+      <div class="intro__copy reveal">
+        <span class="eyebrow">Welcome</span>
+        <h2 id="intro-title">More Than Just a Journey</h2>
+        <p class="lede">
+          Some journeys take us to new places. Others help us see the world, and ourselves, differently. The Spiritual Dove is
+          a space to explore meaningful destinations, discover the stories behind them, and reflect on the beauty of the
+          journey.
+        </p>
+        <ul class="intro__pillars">
+          <li><Icon name="compass" /><span>Sacred &amp; meaningful places</span></li>
+          <li><Icon name="feather" /><span>Stories &amp; traditions</span></li>
+          <li><Icon name="leaf" /><span>Reflection &amp; nature</span></li>
+        </ul>
+        <a class="text-link" href="/about/">About The Spiritual Dove <Icon name="arrow-right" /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- C. Featured places -->
+  <section class="section section--tint" aria-labelledby="places-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <span class="eyebrow">Featured Places</span>
+          <h2 id="places-title">Places That Leave a Mark</h2>
+          <p>Sacred sites, heritage towns and peaceful landscapes — each with a story worth discovering.</p>
+        </div>
+        <div class="section-head__actions">
+          <div class="carousel__nav" role="group" aria-label="Scroll places">
+            <button type="button" class="carousel__btn" data-carousel-prev aria-label="Previous places">
+              <Icon name="arrow-left" size={20} />
+            </button>
+            <button type="button" class="carousel__btn" data-carousel-next aria-label="Next places">
+              <Icon name="arrow-right" size={20} />
+            </button>
+          </div>
+          <a class="btn btn--ghost" href="/places/">View all places</a>
+        </div>
+      </div>
+      <div class="carousel" data-carousel>
+        <ul class="carousel__track" data-carousel-track tabindex="0" aria-label="Featured places">
+          {places.map((place) => <li class="carousel__item"><PlaceCard place={place} /></li>)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. Featured stories -->
+  <section class="section" aria-labelledby="stories-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <div>
+          <span class="eyebrow">Featured Stories</span>
+          <h2 id="stories-title">Notes from the Journey</h2>
+          <p>Essays, reflections and cultural stories about travelling with curiosity and care.</p>
+        </div>
+        <a class="btn btn--ghost" href="/stories/">All stories</a>
+      </div>
+      {leadStory && <div class="reveal lead-story"><StoryCard story={leadStory} layout="wide" /></div>}
+      {
+        moreStories.length > 0 && (
+          <div class="grid grid--3 more-stories">
+            {moreStories.map((story) => <div class="reveal"><StoryCard story={story} /></div>)}
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <!-- E. Reflection -->
+  <section class="reflection" aria-labelledby="reflection-title">
+    <div class="reflection__bg" aria-hidden="true">
+      <Cover cover={{ scene: 'lamp', alt: 'An oil lamp glowing over dark water' }} ratio="auto" />
+    </div>
+    <div class="container reflection__inner">
+      <h2 id="reflection-title" class="reveal">
+        <span>Pause.</span> <span>Observe.</span> <span>Feel.</span>
+      </h2>
+      <p class="reflection__quote reveal">
+        “Sometimes the most meaningful part of a journey is not what we see, but what we take home within us.”
+      </p>
+      <ol class="reflection__steps reveal">
+        <li>
+          <span class="reflection__num">01</span>
+          <h3>Pause</h3>
+          <p>Let a place arrive before rushing on. Stillness is where noticing begins.</p>
+        </li>
+        <li>
+          <span class="reflection__num">02</span>
+          <h3>Observe</h3>
+          <p>Watch the rituals, rhythms and people that give a place its meaning.</p>
+        </li>
+        <li>
+          <span class="reflection__num">03</span>
+          <h3>Feel</h3>
+          <p>Carry home what stays with you — a lesson, a question, a quiet sense of wonder.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- F. Newsletter -->
+  <Newsletter />
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+    const track = root.querySelector<HTMLElement>('[data-carousel-track]');
+    const section = root.parentElement;
+    const prev = section?.querySelector<HTMLButtonElement>('[data-carousel-prev]');
+    const next = section?.querySelector<HTMLButtonElement>('[data-carousel-next]');
+    if (!track || !prev || !next) return;
+
+    const step = () => {
+      const item = track.querySelector<HTMLElement>('.carousel__item');
+      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      return item ? item.offsetWidth + gap : track.clientWidth;
+    };
+    const update = () => {
+      const max = track.scrollWidth - track.clientWidth - 2;
+      prev.disabled = track.scrollLeft <= 2;
+      next.disabled = track.scrollLeft >= max;
+    };
+    prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+    track.addEventListener('scroll', update, { passive: true });
+    track.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') track.scrollBy({ left: step(), behavior: 'smooth' });
+      if (e.key === 'ArrowLeft') track.scrollBy({ left: -step(), behavior: 'smooth' });
+    });
+    window.addEventListener('resize', update);
+    update();
+  });
+</script>
+
+<style>
+  /* Hero */
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    min-height: max(620px, 100svh);
+    display: flex;
+    align-items: flex-end;
+    color: var(--white);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .hero__media {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+  }
+  .hero__media :global(.cover) {
+    height: 100%;
+  }
+  .hero__media :global(svg),
+  .hero__media :global(img) {
+    animation: hero-drift 24s var(--ease) both;
+  }
+  @keyframes hero-drift {
+    from { transform: scale(1.08); }
+    to { transform: scale(1); }
+  }
+  .hero__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(180deg, rgba(30, 24, 22, 0.45) 0%, rgba(30, 24, 22, 0) 22%),
+      linear-gradient(0deg, rgba(30, 22, 24, 0.78) 0%, rgba(30, 22, 24, 0.35) 40%, rgba(30, 22, 24, 0) 70%);
+  }
+  .hero__content {
+    padding-bottom: clamp(5rem, 12vh, 8rem);
+    padding-top: calc(var(--header-h) + 3rem);
+  }
+  .hero__kicker {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 1.2rem;
+  }
+  .hero h1 {
+    color: var(--white);
+    max-width: 14ch;
+    font-size: clamp(2.7rem, 1.6rem + 5vw, 6rem);
+    font-weight: 500;
+    line-height: 1.02;
+    margin-bottom: 1.4rem;
+    text-shadow: 0 2px 30px rgba(0, 0, 0, 0.25);
+  }
+  .hero__text {
+    max-width: 46ch;
+    font-size: var(--step-1);
+    line-height: 1.55;
+    color: rgba(255, 253, 249, 0.9);
+    margin-bottom: 2rem;
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  .hero__scroll {
+    position: absolute;
+    left: 50%;
+    bottom: 1.6rem;
+    width: 26px;
+    height: 42px;
+    margin-left: -13px;
+    border: 1.5px solid rgba(255, 253, 249, 0.7);
+    border-radius: 999px;
+  }
+  .hero__scroll span {
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    width: 3px;
+    height: 8px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--white);
+    animation: scroll-cue 2.2s var(--ease) infinite;
+  }
+  @keyframes scroll-cue {
+    0% { opacity: 0; transform: translateY(0); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(14px); }
+  }
+  @media (max-width: 640px) {
+    .hero__scroll { display: none; }
+    .hero__actions .btn { flex: 1 1 100%; }
+  }
+
+  /* Intro */
+  .intro__inner {
+    max-width: 980px;
+    text-align: center;
+  }
+  .intro .eyebrow {
+    justify-content: center;
+  }
+  .intro .lede {
+    max-width: 60ch;
+    margin-inline: auto;
+  }
+  .intro__pillars {
+    list-style: none;
+    padding: 0;
+    margin: 2.4rem 0 2.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 2.2rem;
+  }
+  .intro__pillars li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--ink-soft);
+  }
+  .intro__pillars :global(svg) {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    padding: 9px;
+    border-radius: 50%;
+    background: var(--sage-soft);
+    color: var(--sage);
+  }
+
+  /* Featured places carousel */
+  .section-head__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.8rem 1.2rem;
+  }
+  .carousel__nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .carousel__btn {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--ink);
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease), opacity 0.2s var(--ease);
+  }
+  .carousel__btn:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--white);
+  }
+  .carousel__btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+  .carousel__track {
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0 1.5rem;
+    display: flex;
+    gap: clamp(1.25rem, 2.5vw, 2rem);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .carousel__track::-webkit-scrollbar {
+    display: none;
+  }
+  .carousel__item {
+    flex: 0 0 min(84%, 380px);
+    scroll-snap-align: start;
+    display: flex;
+  }
+  .carousel__item > :global(*) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Stories */
+  .lead-story:not(:last-child) {
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+    padding-bottom: clamp(2.5rem, 5vw, 4rem);
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* Reflection */
+  .reflection {
+    position: relative;
+    isolation: isolate;
+    color: var(--white);
+    padding-block: clamp(5rem, 12vw, 9rem);
+    text-align: center;
+    overflow: hidden;
+    background: var(--dusk);
+  }
+  .reflection__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    opacity: 0.9;
+  }
+  .reflection__bg :global(.cover) {
+    height: 100%;
+  }
+  .reflection__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(28, 31, 58, 0.5), rgba(28, 31, 58, 0.7) 60%, rgba(28, 31, 58, 0.85));
+  }
+  .reflection h2 {
+    color: var(--white);
+    font-size: clamp(2.8rem, 1.5rem + 6vw, 6.5rem);
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: 0.4em;
+  }
+  .reflection h2 span:nth-child(2) { color: #f3c99c; }
+  .reflection__quote {
+    max-width: 34ch;
+    margin: 0 auto 4rem;
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    line-height: 1.4;
+    color: rgba(255, 253, 249, 0.88);
+  }
+  .reflection__steps {
+    list-style: none;
+    margin: 0 auto;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    max-width: 1000px;
+    text-align: left;
+  }
+  @media (min-width: 800px) {
+    .reflection__steps { grid-template-columns: repeat(3, 1fr); }
+  }
+  .reflection__steps li {
+    padding: 1.8rem;
+    border-radius: var(--radius);
+    background: rgba(255, 253, 249, 0.06);
+    border: 1px solid rgba(255, 253, 249, 0.14);
+    backdrop-filter: blur(6px);
+  }
+  .reflection__num {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    color: #f3c99c;
+  }
+  .reflection__steps h3 {
+    color: var(--white);
+    font-size: 1.9rem;
+    margin: 0.5rem 0 0.4rem;
+  }
+  .reflection__steps p {
+    margin: 0;
+    color: rgba(255, 253, 249, 0.75);
+    font-size: 0.97rem;
+  }
+</style>

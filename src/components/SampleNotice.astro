@@ -1,0 +1,47 @@
+---
+interface Props {
+  kind?: 'place' | 'story';
+}
+const { kind = 'place' } = Astro.props;
+---
+<aside class="sample-notice" role="note">
+  <span class="sample-notice__dot" aria-hidden="true"></span>
+  <p>
+    <strong>Sample {kind === 'place' ? 'destination' : 'story'}.</strong>
+    {
+      kind === 'place'
+        ? 'This is starter content showing how a destination page is laid out. Background facts are general and should be checked; practical details must be verified before publishing.'
+        : 'This is starter content showing how a story is laid out. It is not an account of a real journey — replace it with your own writing.'
+    }
+  </p>
+</aside>
+
+<style>
+  .sample-notice {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--radius-sm);
+    background: #fbf1e4;
+    border: 1px solid #ecd5b8;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .sample-notice p {
+    margin: 0;
+  }
+  .sample-notice strong {
+    color: var(--saffron-deep);
+    font-weight: 600;
+  }
+  .sample-notice__dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-top: 0.45rem;
+    border-radius: 50%;
+    background: var(--saffron);
+  }
+</style>

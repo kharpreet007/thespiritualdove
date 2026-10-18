@@ -1,0 +1,109 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+  city: string;
+  coordinates: { lat: number; lng: number };
+  transport: { mode: 'air' | 'rail' | 'road' | 'local'; title: string; text: string }[];
+}
+const { city, coordinates, transport } = Astro.props;
+const icons = { air: 'plane', rail: 'train', road: 'bus', local: 'route' } as const;
+const q = encodeURIComponent(city);
+const links = [
+  { label: 'Directions on Google Maps', url: `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}` },
+  { label: 'Train tickets (IRCTC)', url: 'https://www.irctc.co.in/' },
+  { label: `Flights to ${city}`, url: `https://www.google.com/travel/flights?q=flights%20to%20${q}` },
+  { label: 'Bus tickets (redBus)', url: 'https://www.redbus.in/' },
+];
+---
+<ul class="modes">
+  {
+    transport.map((t) => (
+      <li>
+        <span class="modes__icon">
+          <Icon name={icons[t.mode]} size={22} />
+        </span>
+        <div>
+          <h3>{t.title}</h3>
+          <p>{t.text}</p>
+        </div>
+      </li>
+    ))
+  }
+</ul>
+<div class="tlinks">
+  <p class="tlinks__label">Plan your journey</p>
+  <div class="tlinks__row">
+    {
+      links.map((l) => (
+        <a class="pill" href={l.url} target="_blank" rel="noopener">
+          {l.label} <Icon name="external" size={14} />
+        </a>
+      ))
+    }
+  </div>
+  <p class="tlinks__note">Distances and travel times are approximate. Check schedules before you travel.</p>
+</div>
+
+<style>
+  .modes {
+    list-style: none;
+    margin: 1.2rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+  }
+  @media (min-width: 640px) {
+    .modes {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .modes li {
+    display: flex;
+    gap: 1rem;
+    padding: 1.3rem 1.4rem;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .modes__icon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--sage-soft);
+    color: var(--sage);
+  }
+  .modes h3 {
+    font-size: 1.35rem;
+    margin: 0.1rem 0 0.3rem;
+  }
+  .modes p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+  .tlinks {
+    margin-top: 1.4rem;
+    padding: 1.2rem 1.3rem;
+    border-radius: var(--radius-sm);
+    background: var(--paper-2);
+  }
+  .tlinks__label {
+    margin: 0 0 0.7rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .tlinks__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .tlinks__note {
+    margin: 0.8rem 0 0;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+  }
+</style>

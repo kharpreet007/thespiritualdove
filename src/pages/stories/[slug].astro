@@ -1,0 +1,225 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Cover from '../../components/Cover.astro';
+import Icon from '../../components/Icon.astro';
+import PlaceCard from '../../components/PlaceCard.astro';
+import StoryCard from '../../components/StoryCard.astro';
+import SampleNotice from '../../components/SampleNotice.astro';
+import DoveMark from '../../components/DoveMark.astro';
+import { render } from 'astro:content';
+import { getPlaces, getStories, formatDate, readingTime, slugify, type Story } from '../../lib/content';
+import { site } from '../../config/site';
+
+export async function getStaticPaths() {
+  const stories = await getStories();
+  return stories.map((story) => ({ params: { slug: story.id }, props: { story } }));
+}
+
+const { story } = Astro.props as { story: Story };
+const d = story.data;
+const { Content } = await render(story);
+const places = (await getPlaces()).filter((p) => d.places.includes(p.id));
+const others = (await getStories()).filter((s) => s.id !== story.id);
+const more = [...others.filter((s) => s.data.category === d.category), ...others.filter((s) => s.data.category !== d.category)].slice(0, 3);
+---
+<BaseLayout title={d.title} description={d.excerpt} type="article">
+  <article class="story">
+    <header class="story__header container">
+      <a class="back-link" href="/stories/"><Icon name="arrow-left" size={16} /> All Stories</a>
+      <a class="tag" href={`/stories/?category=${slugify(d.category)}`}>{d.category}</a>
+      <h1>{d.title}</h1>
+      <p class="story__excerpt">{d.excerpt}</p>
+      <p class="story__meta">
+        <span>By {site.authorName || site.authorTitle}</span>
+        <span aria-hidden="true">·</span>
+        <time datetime={d.publishDate.toISOString()}>{formatDate(d.publishDate)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{readingTime(story.body)}</span>
+      </p>
+    </header>
+
+    <div class="container">
+      <figure class="story__cover">
+        <Cover cover={d.cover} ratio="2 / 1" eager />
+        {d.cover.credit && <figcaption>{d.cover.credit}</figcaption>}
+      </figure>
+    </div>
+
+    <div class="container">
+      <div class="prose-width">
+        {d.sample && <div class="story__notice"><SampleNotice kind="story" /></div>}
+        <div class="prose">
+          <Content />
+        </div>
+
+        {
+          d.tags.length > 0 && (
+            <ul class="story__tags" aria-label="Tags">
+              {d.tags.map((t) => <li>#{t}</li>)}
+            </ul>
+          )
+        }
+
+        <aside class="author-box" aria-label="About the author">
+          <div class="author-box__avatar" aria-hidden="true"><DoveMark size={34} /></div>
+          <div>
+            <p class="author-box__name">{site.authorName || site.name}</p>
+            <p class="author-box__title">{site.authorTitle}</p>
+            <p class="author-box__bio">
+              Writing about sacred places, culture and the quiet lessons of travel. <a href="/about/">More about the journey</a>
+              · <a href={site.instagram.url} target="_blank" rel="noopener">{site.instagram.handle}</a>
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    {
+      places.length > 0 && (
+        <section class="section section--tint" aria-labelledby="story-places">
+          <div class="container">
+            <div class="section-head">
+              <div>
+                <span class="eyebrow">Mentioned in this story</span>
+                <h2 id="story-places">Places to explore</h2>
+              </div>
+            </div>
+            <div class:list={['grid', places.length <= 2 ? 'grid--2' : 'grid--3']}>
+              {places.map((p) => <PlaceCard place={p} />)}
+            </div>
+          </div>
+        </section>
+      )
+    }
+
+    {more.length > 0 && <section class="section" aria-labelledby="more-stories">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">Keep reading</span>
+            <h2 id="more-stories">More stories</h2>
+          </div>
+          <a class="btn btn--ghost" href="/stories/">All stories</a>
+        </div>
+        <div class="grid grid--3">
+          {more.map((s) => <StoryCard story={s} />)}
+        </div>
+      </div>
+    </section>}
+  </article>
+</BaseLayout>
+
+<style>
+  .story__header {
+    max-width: 860px;
+    text-align: center;
+    padding-top: clamp(2rem, 5vw, 3.5rem);
+    padding-bottom: 2.5rem;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 2rem;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+  .back-link:hover {
+    color: var(--saffron-deep);
+  }
+  .story__header .tag {
+    display: block;
+    text-decoration: none;
+    margin-bottom: 1rem;
+  }
+  .story__header h1 {
+    font-size: var(--step-5);
+    margin-bottom: 0.45em;
+  }
+  .story__excerpt {
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    line-height: 1.4;
+    color: var(--ink-soft);
+    max-width: 40ch;
+    margin: 0 auto 1.5rem;
+  }
+  .story__meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.88rem;
+    color: var(--ink-faint);
+    margin: 0;
+  }
+  .story__cover {
+    margin: 0 0 clamp(2.5rem, 5vw, 4rem);
+    border-radius: calc(var(--radius) * 1.4);
+    overflow: hidden;
+  }
+  @media (max-width: 640px) {
+    .story__cover :global(.cover) {
+      aspect-ratio: 4 / 3;
+    }
+  }
+  .story__notice {
+    margin-bottom: 2.5rem;
+  }
+  .story__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 3rem 0 0;
+  }
+  .story__tags li {
+    font-size: 0.82rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: var(--paper-2);
+    color: var(--ink-soft);
+  }
+  .author-box {
+    display: flex;
+    gap: 1.2rem;
+    align-items: flex-start;
+    margin: 3rem 0 clamp(4rem, 8vw, 6rem);
+    padding: 1.6rem;
+    border-radius: var(--radius);
+    background: var(--white);
+    border: 1px solid var(--line);
+  }
+  .author-box__avatar {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--paper-2);
+    color: var(--saffron);
+  }
+  .author-box p {
+    margin: 0;
+  }
+  .author-box__name {
+    font-family: var(--font-serif);
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .author-box__title {
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--saffron-deep);
+    margin-bottom: 0.6rem !important;
+  }
+  .author-box__bio {
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+  }
+</style>

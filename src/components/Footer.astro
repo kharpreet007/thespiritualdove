@@ -1,0 +1,141 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { nav, site } from '../config/site';
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__top">
+      <div class="site-footer__brand">
+        <Logo tone="light" />
+        <p>
+          A travel and spirituality journal documenting sacred places, culturally meaningful destinations, quiet landscapes, and
+          the reflections that journeys leave behind.
+        </p>
+        <a class="site-footer__ig" href={site.instagram.url} target="_blank" rel="noopener">
+          <Icon name="instagram" size={18} />
+          {site.instagram.handle}
+        </a>
+      </div>
+
+      <nav class="site-footer__col" aria-label="Footer">
+        <h2>Explore</h2>
+        <ul>
+          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </nav>
+
+      <div class="site-footer__col">
+        <h2>Connect</h2>
+        <ul>
+          <li><a href="/collaborate/#contact">Contact</a></li>
+          <li><a href="/collaborate/">Work together</a></li>
+          <li><a href={site.instagram.url} target="_blank" rel="noopener">Instagram</a></li>
+          <li><a href="/rss.xml">RSS feed</a></li>
+        </ul>
+      </div>
+
+      <div class="site-footer__col">
+        <h2>Info</h2>
+        <ul>
+          <li><a href="/privacy/">Privacy Policy</a></li>
+          <li><a href="/privacy/#cookies">Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      <p>© {year} {site.name}. All rights reserved.</p>
+      <p class="site-footer__tag">{site.tagline}</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: #24211e;
+    color: rgba(255, 253, 249, 0.72);
+    padding: clamp(3.5rem, 7vw, 5.5rem) 0 2rem;
+    font-size: 0.95rem;
+  }
+  .site-footer__top {
+    display: grid;
+    gap: 2.5rem;
+    grid-template-columns: 1fr;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid rgba(255, 253, 249, 0.12);
+  }
+  @media (min-width: 640px) {
+    .site-footer__top {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 980px) {
+    .site-footer__top {
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+    }
+    .site-footer__brand {
+      grid-column: auto;
+    }
+  }
+  .site-footer__brand p {
+    margin: 1.4rem 0 1.2rem;
+    max-width: 40ch;
+    line-height: 1.7;
+  }
+  .site-footer__ig {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #f0c79f;
+    text-decoration: none;
+    padding: 0.25rem 0;
+  }
+  .site-footer__ig:hover {
+    color: var(--white);
+  }
+  .site-footer h2 {
+    font: 600 0.72rem/1 var(--font-sans);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 253, 249, 0.5);
+    margin: 0.6rem 0 1.2rem;
+  }
+  .site-footer ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .site-footer__col a {
+    display: inline-block;
+    padding: 0.2rem 0;
+    color: rgba(255, 253, 249, 0.85);
+    text-decoration: none;
+  }
+  .site-footer__col a:hover {
+    color: #f0c79f;
+  }
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 2rem;
+    padding-top: 1.8rem;
+    font-size: 0.85rem;
+    color: rgba(255, 253, 249, 0.5);
+  }
+  .site-footer__bottom p {
+    margin: 0;
+  }
+  .site-footer__tag {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.05rem;
+  }
+</style>

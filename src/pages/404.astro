@@ -1,0 +1,45 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Cover from '../components/Cover.astro';
+import Icon from '../components/Icon.astro';
+---
+<BaseLayout title="Page not found">
+  <section class="container nf">
+    <div class="nf__art" aria-hidden="true">
+      <Cover cover={{ scene: 'path', alt: 'A winding path' }} ratio="16 / 9" />
+    </div>
+    <span class="eyebrow">404</span>
+    <h1>This path leads somewhere else</h1>
+    <p class="lede">The page you were looking for could not be found. Perhaps it has moved, or the journey simply took a different turn.</p>
+    <div class="nf__actions">
+      <a class="btn btn--primary" href="/">Return home <Icon name="arrow-right" /></a>
+      <a class="btn btn--ghost" href="/places/">Explore Places</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf {
+    max-width: 760px;
+    text-align: center;
+    padding-block: clamp(3rem, 8vw, 6rem);
+  }
+  .nf__art {
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+  .nf .eyebrow {
+    justify-content: center;
+  }
+  .nf h1 {
+    font-size: var(--step-4);
+  }
+  .nf__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+</style>

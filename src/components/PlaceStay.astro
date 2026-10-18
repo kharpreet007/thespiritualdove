@@ -1,0 +1,168 @@
+---
+import Icon from './Icon.astro';
+import Placeholder from './Placeholder.astro';
+
+interface Props {
+  city: string;
+  fileId: string;
+  stay: {
+    intro?: string;
+    areas: { name: string; text: string }[];
+    recommended: { name: string; note?: string; url?: string }[];
+  };
+}
+const { city, fileId, stay } = Astro.props;
+const q = encodeURIComponent(city);
+const searches = [
+  { label: 'Google Hotels', url: `https://www.google.com/travel/hotels/${q}` },
+  { label: 'Booking.com', url: `https://www.booking.com/searchresults.html?ss=${q}` },
+  { label: 'Hotels on Google Maps', url: `https://www.google.com/maps/search/hotels+in+${q}` },
+];
+---
+{stay.intro && <p>{stay.intro}</p>}
+
+{
+  stay.areas.length > 0 && (
+    <>
+      <h3 class="sub">Where to base yourself</h3>
+      <ul class="areas">
+        {stay.areas.map((a) => (
+          <li>
+            <strong>{a.name}</strong>
+            <span>{a.text}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
+<h3 class="sub">Recommended stays</h3>
+{
+  stay.recommended.length > 0 ? (
+    <ul class="recs">
+      {stay.recommended.map((r) => (
+        <li>
+          <Icon name="bed" />
+          <div>
+            {r.url ? (
+              <a href={r.url} target="_blank" rel="noopener">
+                {r.name}
+              </a>
+            ) : (
+              <strong>{r.name}</strong>
+            )}
+            {r.note && <p>{r.note}</p>}
+          </div>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <Placeholder label="Add stays you have used or trust">
+      <p>
+        List hotels, guest houses or ashrams you can genuinely recommend under <code>stay.recommended</code> in
+        <code>src/content/places/{fileId}.md</code>, with a short note on why.
+      </p>
+    </Placeholder>
+  )
+}
+
+<div class="search">
+  <p class="search__label">Search hotels in {city}</p>
+  <div class="search__links">
+    {
+      searches.map((s) => (
+        <a class="pill" href={s.url} target="_blank" rel="noopener">
+          {s.label} <Icon name="external" size={14} />
+        </a>
+      ))
+    }
+  </div>
+  <p class="search__note">These links open search results on other websites. They are not paid endorsements.</p>
+</div>
+
+<style>
+  .sub {
+    font-size: 1.45rem;
+    margin: 1.8rem 0 0.8rem;
+  }
+  .areas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .areas li {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  @media (min-width: 640px) {
+    .areas li {
+      grid-template-columns: 220px 1fr;
+      gap: 1.5rem;
+    }
+  }
+  .areas strong {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .areas span {
+    color: var(--ink-soft);
+    font-size: 0.97rem;
+  }
+  .recs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .recs li {
+    display: flex;
+    gap: 0.8rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--white);
+  }
+  .recs li :global(svg) {
+    flex: none;
+    color: var(--saffron);
+    margin-top: 0.2rem;
+  }
+  .recs p {
+    margin: 0.2rem 0 0;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+  }
+  code {
+    font-size: 0.85em;
+    background: rgba(181, 97, 47, 0.08);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    word-break: break-word;
+  }
+  .search {
+    margin-top: 1.6rem;
+    padding: 1.2rem 1.3rem;
+    border-radius: var(--radius-sm);
+    background: var(--paper-2);
+  }
+  .search__label {
+    margin: 0 0 0.7rem;
+    font-weight: 600;
+    font-size: 0.92rem;
+  }
+  .search__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .search__note {
+    margin: 0.8rem 0 0;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+  }
+</style>

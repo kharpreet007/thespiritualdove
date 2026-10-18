@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import Placeholder from '../components/Placeholder.astro';
+import { site } from '../config/site';
+---
+<BaseLayout title="Privacy Policy" description={`How ${site.name} handles your information.`}>
+  <PageHero eyebrow="Info" title="Privacy Policy" lede="A plain-language summary of how information is handled on this website." />
+  <section class="container">
+    <div class="prose-width privacy">
+      <Placeholder label="Template — review before publishing">
+        <p>
+          This is a starting template, not legal advice. Review it and update it whenever you connect a newsletter, contact form,
+          analytics or advertising service, so it accurately describes what you collect.
+        </p>
+      </Placeholder>
+
+      <div class="prose">
+        <h2>What this website collects</h2>
+        <p>
+          {site.name} is a personal travel journal. Reading the website does not require an account, and no personal information
+          is collected simply by browsing.
+        </p>
+
+        <h2>Contact and collaboration messages</h2>
+        <p>
+          If you send a message through the Collaborate page, the details you provide (such as your name, email address and
+          message) are used only to reply to your enquiry. They are not sold or shared for marketing.
+        </p>
+
+        <h2>Newsletter</h2>
+        <p>
+          If a newsletter is offered, your email address will be used only to send letters you have signed up for, and you can
+          unsubscribe at any time. The email provider used will be named here.
+        </p>
+
+        <h2 id="cookies">Cookies and third-party services</h2>
+        <p>
+          This website does not set its own tracking cookies. Fonts are loaded from Google Fonts, which means your browser
+          connects to Google's servers when pages load. Links to Instagram and other sites are governed by those sites' own
+          privacy policies.
+        </p>
+
+        <h2>Your choices</h2>
+        <p>
+          You can ask for any message you have sent to be deleted. Please get in touch through the <a href="/collaborate/#contact">contact
+          page</a> or on Instagram at <a href={site.instagram.url} target="_blank" rel="noopener">{site.instagram.handle}</a>.
+        </p>
+
+        <p class="privacy__updated"><em>Last updated: [add date when published]</em></p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .privacy {
+    padding-bottom: clamp(4rem, 9vw, 7rem);
+  }
+  .privacy .prose {
+    margin-top: 2rem;
+  }
+  .privacy .prose > p:first-of-type::first-letter {
+    float: none;
+    font-size: inherit;
+    color: inherit;
+    padding: 0;
+    font-family: inherit;
+  }
+  .privacy__updated {
+    color: var(--ink-faint);
+  }
+</style>

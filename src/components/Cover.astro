@@ -1,0 +1,45 @@
+---
+import { renderScene, type SceneName } from '../scripts/scene';
+
+interface Props {
+  cover: { image?: string; alt: string; scene: SceneName; credit?: string; focus?: string };
+  ratio?: string;
+  eager?: boolean;
+  class?: string;
+}
+const { cover, ratio = '4 / 3', eager = false, class: className } = Astro.props;
+---
+<div class:list={['cover', className]} style={`--ratio: ${ratio}; --focus: ${cover.focus ?? '50% 50%'}`}>
+  {
+    cover.image ? (
+      <img
+        src={cover.image}
+        alt={cover.alt}
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+        fetchpriority={eager ? 'high' : 'auto'}
+      />
+    ) : (
+      <Fragment set:html={renderScene(cover.scene, `Illustration: ${cover.alt}`)} />
+    )
+  }
+</div>
+
+<style>
+  .cover {
+    position: relative;
+    aspect-ratio: var(--ratio);
+    overflow: hidden;
+    background: var(--paper-3);
+  }
+  .cover :global(img),
+  .cover :global(svg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: var(--focus, 50% 50%);
+    transition: transform 1.2s var(--ease);
+  }
+</style>

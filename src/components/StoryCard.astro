@@ -1,0 +1,102 @@
+---
+import Cover from './Cover.astro';
+import { readingTime, slugify, type Story } from '../lib/content';
+
+interface Props {
+  story: Story;
+  layout?: 'stacked' | 'wide';
+  headingLevel?: 'h2' | 'h3';
+}
+const { story, layout = 'stacked', headingLevel = 'h3' } = Astro.props;
+const d = story.data;
+const href = `/stories/${story.id}/`;
+const Heading = headingLevel;
+---
+<article class:list={['story-card', `story-card--${layout}`]} data-story-card data-category={slugify(d.category)}>
+  <div class="story-card__media">
+    <Cover cover={d.cover} ratio={layout === 'wide' ? '4 / 3' : '3 / 2'} />
+  </div>
+  <div class="story-card__body">
+    <p class="story-card__meta">
+      <span class="tag">{d.category}</span>
+      <span aria-hidden="true">·</span>
+      <span>{readingTime(story.body)}</span>
+    </p>
+    <Heading class="story-card__title"><a href={href}>{d.title}</a></Heading>
+    <p class="story-card__excerpt">{d.excerpt}</p>
+  </div>
+</article>
+
+<style>
+  .story-card {
+    position: relative;
+    display: grid;
+    gap: 1.2rem;
+    align-content: start;
+  }
+  .story-card__media {
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .story-card:hover :global(.cover svg),
+  .story-card:hover :global(.cover img) {
+    transform: scale(1.04);
+  }
+  .story-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.6rem;
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+  }
+  .story-card__title {
+    font-size: 1.75rem;
+    line-height: 1.15;
+    margin: 0 0 0.55rem;
+  }
+  .story-card__title a {
+    color: inherit;
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size 0.5s var(--ease);
+  }
+  .story-card:hover .story-card__title a {
+    background-size: 100% 1px;
+  }
+  .story-card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .story-card__title a:focus-visible {
+    outline: none;
+  }
+  .story-card:has(.story-card__title a:focus-visible) {
+    outline: 2px solid var(--saffron);
+    outline-offset: 6px;
+    border-radius: var(--radius);
+  }
+  .story-card__excerpt {
+    color: var(--ink-soft);
+    font-size: 0.97rem;
+    margin: 0;
+  }
+  @media (min-width: 760px) {
+    .story-card--wide {
+      grid-template-columns: 1.1fr 1fr;
+      gap: 2.5rem;
+      align-items: center;
+    }
+    .story-card--wide .story-card__title {
+      font-size: var(--step-3);
+    }
+    .story-card--wide .story-card__excerpt {
+      font-size: 1.05rem;
+    }
+  }
+</style>

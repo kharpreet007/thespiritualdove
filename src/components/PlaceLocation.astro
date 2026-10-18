@@ -1,0 +1,188 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../config/site';
+
+interface Props {
+  name: string;
+  address?: string;
+  location: string;
+  coordinates: { lat: number; lng: number };
+}
+const { name, address, location, coordinates } = Astro.props;
+const { lat, lng } = coordinates;
+const q = `${lat},${lng}`;
+const openUrl = `https://www.google.com/maps/search/?api=1&query=${q}`;
+const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${q}`;
+const embedUrl = `https://www.google.com/maps?q=${q}&z=14&output=embed`;
+const fmt = (v: number, pos: string, neg: string) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? pos : neg}`;
+---
+<div class="loc">
+  <div class="loc__map">
+    {
+      site.maps.embed ? (
+        <iframe
+          src={embedUrl}
+          title={`Map showing ${name}`}
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          allowfullscreen
+        />
+      ) : (
+        <a class="loc__static" href={openUrl} target="_blank" rel="noopener" aria-label={`Open ${name} in Google Maps`}>
+          <span class="loc__rings" aria-hidden="true" />
+          <span class="loc__pin" aria-hidden="true">
+            <Icon name="pin" size={30} />
+          </span>
+          <span class="loc__label">{name}</span>
+          <span class="loc__hint">Tap to open the interactive map</span>
+        </a>
+      )
+    }
+  </div>
+  <div class="loc__info">
+    <dl>
+      <div>
+        <dt>Address</dt>
+        <dd>{address ?? location}</dd>
+      </div>
+      <div>
+        <dt>Coordinates</dt>
+        <dd class="loc__coords">{fmt(lat, 'N', 'S')}, {fmt(lng, 'E', 'W')}</dd>
+      </div>
+    </dl>
+    <div class="loc__actions">
+      <a class="btn btn--primary" href={directionsUrl} target="_blank" rel="noopener"><Icon name="route" /> Get directions</a>
+      <a class="btn btn--ghost" href={openUrl} target="_blank" rel="noopener"><Icon name="map" /> Open in Google Maps</a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .loc {
+    display: grid;
+    margin-top: 1.25rem;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--white);
+  }
+  .loc__map {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--paper-2);
+  }
+  @media (max-width: 640px) {
+    .loc__map {
+      aspect-ratio: 4 / 3;
+    }
+  }
+  .loc__map iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .loc__static {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    color: var(--ink);
+    background:
+      repeating-radial-gradient(circle at 30% 70%, transparent 0 38px, rgba(111, 127, 104, 0.14) 38px 39px),
+      repeating-radial-gradient(circle at 78% 22%, transparent 0 30px, rgba(181, 97, 47, 0.1) 30px 31px),
+      linear-gradient(90deg, rgba(42, 39, 36, 0.04) 1px, transparent 1px) 0 0 / 48px 48px,
+      linear-gradient(0deg, rgba(42, 39, 36, 0.04) 1px, transparent 1px) 0 0 / 48px 48px,
+      #eef0e6;
+  }
+  .loc__rings {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 140px;
+    height: 140px;
+    margin: -96px 0 0 -70px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(181, 97, 47, 0.22), rgba(181, 97, 47, 0) 70%);
+    animation: pulse 2.6s var(--ease) infinite;
+  }
+  @keyframes pulse {
+    0% { transform: scale(0.6); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .loc__pin {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--saffron);
+    color: var(--white);
+    box-shadow: 0 10px 24px -8px rgba(143, 69, 32, 0.6);
+  }
+  .loc__label {
+    position: relative;
+    margin-top: 0.4rem;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: var(--white);
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .loc__hint {
+    position: relative;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+  }
+  .loc__static:hover .loc__hint {
+    color: var(--saffron-deep);
+  }
+  .loc__info {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.4rem 1.5rem 1.5rem;
+  }
+  .loc__info dl {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+  }
+  @media (min-width: 640px) {
+    .loc__info dl {
+      grid-template-columns: 1.6fr 1fr;
+      gap: 1.5rem;
+    }
+  }
+  .loc__info dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.2rem;
+  }
+  .loc__info dd {
+    margin: 0;
+    color: var(--ink);
+  }
+  .loc__coords {
+    font-variant-numeric: tabular-nums;
+  }
+  .loc__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+  }
+  @media (max-width: 479px) {
+    .loc__actions .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>
