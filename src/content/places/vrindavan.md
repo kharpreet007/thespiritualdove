@@ -10,9 +10,10 @@ featured: true
 sample: true
 cover:
   image: /images/places/vrindavan-cover.jpg
-  focus: 50% 35%
+  focus: 70% 50%
+  credit: Illustrative image
   scene: yamuna
-  alt: Prem Mandir lit up in pink and white at night, with crowds of visitors at its entrance
+  alt: A white marble temple with a tall carved tower beside a calm reflecting pool, seen through white blossoms under a blue sky
 intro: >-
   Vrindavan is a small town in the Mathura district of Uttar Pradesh, on the banks of the Yamuna. It is filled with
   temples, ashrams and bhajan halls, and from early morning its lanes echo with chanting and the greeting "Radhe Radhe".
