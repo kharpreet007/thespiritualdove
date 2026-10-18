@@ -2,12 +2,14 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import PlaceCard from '../../components/PlaceCard.astro';
+import PlaceFeature from '../../components/PlaceFeature.astro';
 import Icon from '../../components/Icon.astro';
 import { getPlaces, slugify } from '../../lib/content';
 import { placeCategories } from '../../config/site';
 
 const places = await getPlaces();
 const states = [...new Set(places.map((p) => p.data.state))].sort();
+const showFilters = places.length >= 4;
 const usedCategories = placeCategories.filter((c) => places.some((p) => p.data.category === c));
 ---
 <BaseLayout
@@ -22,54 +24,71 @@ const usedCategories = placeCategories.filter((c) => places.some((p) => p.data.c
 
   <section class="places" aria-label="Destination directory">
     <div class="container">
+      {
+        places.length === 1 ? (
+          <>
+            <PlaceFeature place={places[0]} />
+            <p class="places-soon">More places are on the way. Each one gets its own itinerary, map and visitor guide.</p>
+          </>
+        ) : (
+          <>
+            {showFilters && (
+              <>
       <form class="filters" role="search" data-filters onsubmit="return false">
-        <div class="filters__row">
-          <div class="filters__search">
-            <label class="visually-hidden" for="place-search">Search destinations</label>
-            <Icon name="search" size={18} />
-            <input
-              class="input"
-              id="place-search"
-              type="search"
-              placeholder="Search by place, city or state"
-              autocomplete="off"
-              data-filter-search
-            />
-          </div>
-          <div class="filters__state">
-            <label class="visually-hidden" for="place-state">Filter by state</label>
-            <select class="select" id="place-state" data-filter-state>
-              <option value="">All states &amp; regions</option>
-              {states.map((s) => <option value={slugify(s)}>{s}</option>)}
-            </select>
-          </div>
-        </div>
-        <div class="filters__chips" role="group" aria-label="Filter by category">
-          <button type="button" class="chip" aria-pressed="true" data-filter-category="">All</button>
-          {
-            usedCategories.map((c) => (
-              <button type="button" class="chip" aria-pressed="false" data-filter-category={slugify(c)}>
-                {c}
-              </button>
-            ))
-          }
-        </div>
-      </form>
+                  <div class="filters__row">
+                    <div class="filters__search">
+                      <label class="visually-hidden" for="place-search">Search destinations</label>
+                      <Icon name="search" size={18} />
+                      <input
+                        class="input"
+                        id="place-search"
+                        type="search"
+                        placeholder="Search by place, city or state"
+                        autocomplete="off"
+                        data-filter-search
+                      />
+                    </div>
+                    <div class="filters__state">
+                      <label class="visually-hidden" for="place-state">Filter by state</label>
+                      <select class="select" id="place-state" data-filter-state>
+                        <option value="">All states &amp; regions</option>
+                        {states.map((s) => <option value={slugify(s)}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="filters__chips" role="group" aria-label="Filter by category">
+                    <button type="button" class="chip" aria-pressed="true" data-filter-category="">All</button>
+                    {
+                      usedCategories.map((c) => (
+                        <button type="button" class="chip" aria-pressed="false" data-filter-category={slugify(c)}>
+                          {c}
+                        </button>
+                      ))
+                    }
+                  </div>
+                </form>
 
-      <p class="places__count" aria-live="polite" data-results-count>
-        Showing {places.length} {places.length === 1 ? 'place' : 'places'}
-      </p>
-
-      <div class:list={['grid', places.length <= 2 ? 'grid--2' : 'grid--3']} data-results>
-        {places.map((place) => <PlaceCard place={place} headingLevel="h2" />)}
-      </div>
-
-      <div class="empty" data-empty hidden>
-        <div class="empty__icon" aria-hidden="true"><Icon name="compass" size={30} /></div>
-        <h2>No places match your search</h2>
-        <p>Try a different word, or clear the filters to see every destination.</p>
-        <button type="button" class="btn btn--ghost" data-filter-reset>Clear filters</button>
-      </div>
+              </>
+            )}
+            {showFilters && (
+              <p class="places__count" aria-live="polite" data-results-count>
+                Showing {places.length} {places.length === 1 ? 'place' : 'places'}
+              </p>
+            )}
+            <div class:list={['grid', places.length <= 2 ? 'grid--2' : 'grid--3']} data-results>
+              {places.map((place) => <PlaceCard place={place} headingLevel="h2" />)}
+            </div>
+            {showFilters && (
+              <div class="empty" data-empty hidden>
+                <div class="empty__icon" aria-hidden="true"><Icon name="compass" size={30} /></div>
+                <h2>No places match your search</h2>
+                <p>Try a different word, or clear the filters to see every destination.</p>
+                <button type="button" class="btn btn--ghost" data-filter-reset>Clear filters</button>
+              </div>
+            )}
+          </>
+        )
+      }
     </div>
   </section>
 </BaseLayout>
@@ -185,6 +204,14 @@ const usedCategories = placeCategories.filter((c) => places.some((p) => p.data.c
       flex-wrap: wrap;
       overflow: visible;
     }
+  }
+  .places-soon {
+    margin: 1.4rem 0 0;
+    text-align: center;
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 1.25rem;
+    color: var(--ink-soft);
   }
   .places__count {
     font-size: 0.88rem;

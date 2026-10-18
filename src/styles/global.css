@@ -8,8 +8,8 @@
   --paper-2: #f1eadf;
   --paper-3: #e8dece;
   --ink: #2a2724;
-  --ink-soft: #5b544c;
-  --ink-faint: #8a8177;
+  --ink-soft: #4a443d;
+  --ink-faint: #6a6259;
   --line: #ddd3c4;
   --saffron: #b5612f;
   --saffron-deep: #8f4520;
@@ -331,7 +331,7 @@ a:hover {
 
 .tag {
   display: inline-block;
-  font-size: 0.7rem;
+  font-size: 0.76rem;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;

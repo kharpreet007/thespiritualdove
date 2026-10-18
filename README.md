@@ -38,23 +38,17 @@ Copy any file in `src/content/places/`, rename it (the filename becomes the URL,
 
 Copy a file in `src/content/stories/`, write in Markdown below the `---` block. Reading time is calculated automatically. `places` links the story to destinations, and it then appears on those destination pages as a related story. Set `featured: true` to show it on the home page.
 
-## Itinerary and gallery
+## Itinerary, photos and visitor guides
 
-A place can have a day-by-day `itinerary` (see `src/content/places/vrindavan.md`): each day lists its stops, and a stop can have an optional `note`. When a place has an itinerary it replaces the "Things to see" cards, and a **Gallery** appears with one slot per stop.
+A place can have a day-by-day `itinerary` (see `src/content/places/vrindavan.md`): each day lists its stops, and a stop can have an optional `note`. When a place has an itinerary it replaces the "Things to see" cards.
 
-**Visitor guide for each stop.** Tapping a gallery tile opens a guide for that stop with four parts, all optional: `find` (a list: what you'll find there), `visit` (how to visit), `matters` (why it matters) and `expect` (what to expect when you arrive). Add them under the stop in `src/content/places/vrindavan.md`. A stop with none of these shows "The guide for this stop is still being written."
+Each day card has a **Photos & guide** button. It opens a viewer for that day's stops, with a row of tabs to switch between them (for example Day 1: Chandrodaya Mandir, Lotus Temple, Prem Mandir & Market). Stops without photos or a guide show a "coming soon" note.
 
-To give a stop **several photos with captions**, list them under the stop as `photos` (see Chandrodaya Mandir in `src/content/places/vrindavan.md`). The first photo is the cover on the gallery tile; the rest appear as thumbnails in the guide.
+**Visitor guide for each stop.** Add up to four optional parts under the stop: `find` (a list: what you'll find there), `visit` (how to visit), `matters` (why it matters) and `expect` (what to expect when you arrive).
 
-A photo entry can instead be a short **video**: set `video` to the file (for example `/videos/places/vrindavan/clip.mp4`) and `src` to a poster image. Keep clips short and small (a few MB, MP4 / H.264) so the page stays fast.
+**Photos for each stop.** List them under the stop as `photos`, each with a `src` and a `caption`; the first photo is shown first and the rest appear as thumbnails (see Chandrodaya Mandir). A photo entry can instead be a short **video**: set `video` to the file (for example `/videos/places/vrindavan/clip.mp4`) and `src` to a poster image. Keep clips short and small (a few MB, MP4 / H.264) so the page stays fast.
 
-To add a single photo to a gallery slot, drop the image into `public/images/places/<place>/` and name it after the stop in lowercase with dashes (`&` becomes `and`). For example, for Vrindavan:
-
-- `Chandrodaya Mandir` becomes `public/images/places/vrindavan/chandrodaya-mandir.jpg`
-- `Prem Mandir & Market` becomes `public/images/places/vrindavan/prem-mandir-and-market.jpg`
-- `Banke Bihari Ji Temple` becomes `public/images/places/vrindavan/banke-bihari-ji-temple.jpg`
-
-`.jpg`, `.jpeg`, `.png` and `.webp` all work. If you rename a stop in the itinerary, rename its photo to match. Places without an itinerary show a gallery only once at least one photo has been added.
+If you have just one photo per stop, you can skip `photos`: save the image in `public/images/places/<place>/` named after the stop in lowercase with dashes (`&` becomes `and`), for example `prem-mandir-and-market.jpg`. `.jpg`, `.jpeg`, `.png` and `.webp` all work.
 
 ## Photographs
 

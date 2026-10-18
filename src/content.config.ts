@@ -29,6 +29,7 @@ const cover = z.object({
       'stillness',
       'monastery',
       'yamuna',
+      'journey',
     ])
     .default('himalaya'),
 });

@@ -44,3 +44,43 @@ export function findStopPhoto(placeId: string, stopName: string): string | undef
   }
   return undefined;
 }
+
+export interface StopMedia {
+  src: string;
+  caption?: string;
+  video?: string;
+}
+
+export interface Stop {
+  slug: string;
+  name: string;
+  day?: string;
+  note?: string;
+  photos: StopMedia[];
+  find?: string[];
+  visit?: string;
+  matters?: string;
+  expect?: string;
+  hasGuide: boolean;
+  /** True when the stop has a guide or at least one photo, so it can open in the viewer. */
+  viewable: boolean;
+}
+
+type RawStop = Omit<Stop, 'slug' | 'photos' | 'hasGuide' | 'viewable'> & { photos?: StopMedia[] };
+
+/** Turns itinerary stops (or, failing that, highlights) into stops with photos and viewer flags. */
+export function buildStops(
+  placeId: string,
+  itinerary: { day: string; stops: RawStop[] }[],
+  highlights: { title: string; text: string }[]
+): Stop[] {
+  const raw: RawStop[] = itinerary.length
+    ? itinerary.flatMap((d) => d.stops.map((s) => ({ ...s, day: d.day })))
+    : highlights.map((h) => ({ name: h.title, note: h.text }));
+  return raw.map((r) => {
+    const auto = findStopPhoto(placeId, r.name);
+    const photos = r.photos?.length ? r.photos : auto ? [{ src: auto, caption: r.name }] : [];
+    const hasGuide = Boolean(r.find?.length || r.visit || r.matters || r.expect);
+    return { ...r, slug: slugify(r.name), photos, hasGuide, viewable: hasGuide || photos.length > 0 };
+  });
+}

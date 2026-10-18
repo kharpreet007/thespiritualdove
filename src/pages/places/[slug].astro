@@ -9,9 +9,8 @@ import PlaceLocation from '../../components/PlaceLocation.astro';
 import PlaceStay from '../../components/PlaceStay.astro';
 import PlaceTransport from '../../components/PlaceTransport.astro';
 import PlaceItinerary from '../../components/PlaceItinerary.astro';
-import PlaceGallery from '../../components/PlaceGallery.astro';
-import { findStopPhoto } from '../../lib/content';
-import { getPlaces, getStories, formatLocation, slugify, type Place } from '../../lib/content';
+import StopViewer from '../../components/StopViewer.astro';
+import { getPlaces, getStories, formatLocation, slugify, buildStops, type Place } from '../../lib/content';
 
 export async function getStaticPaths() {
   const places = await getPlaces();
@@ -39,18 +38,14 @@ const practicalRows = [
 
 const city = d.city ?? d.title;
 const hasItinerary = d.itinerary.length > 0;
-const galleryItems = hasItinerary
-  ? d.itinerary.flatMap((day) => day.stops.map((s) => ({ ...s, day: day.day })))
-  : d.highlights.map((h) => ({ name: h.title }));
-const hasPhotos = galleryItems.some((g) => ('photos' in g && g.photos?.length) || findStopPhoto(place.id, g.name));
-const showGallery = galleryItems.length > 0 && (hasItinerary || hasPhotos);
+const stops = buildStops(place.id, d.itinerary, d.highlights);
+const days = d.itinerary.map((day) => ({ day: day.day, slug: slugify(day.day), stops: stops.filter((st) => st.day === day.day) }));
 const toc = [
   { id: 'about', label: 'Introduction' },
   { id: 'location', label: 'Location' },
   { id: 'history', label: 'History & culture' },
   ...(d.significance ? [{ id: 'significance', label: 'Spiritual significance' }] : []),
   ...(hasItinerary || d.highlights.length ? [{ id: 'see', label: hasItinerary ? 'Itinerary' : 'Things to see' }] : []),
-  ...(showGallery ? [{ id: 'gallery', label: 'Gallery' }] : []),
   { id: 'hotels', label: 'Where to stay' },
   ...(d.transport.length ? [{ id: 'transport', label: 'Transportation' }] : []),
   { id: 'visit', label: 'Plan your visit' },
@@ -109,8 +104,9 @@ const toc = [
         {
           hasItinerary ? (
             <section id="see" class="place__section">
+              <span id="itinerary" class="anchor-offset"></span>
               <h2>Suggested itinerary</h2>
-              <PlaceItinerary days={d.itinerary} note={d.itineraryNote} />
+              <PlaceItinerary days={days} note={d.itineraryNote} />
             </section>
           ) : (
             d.highlights.length > 0 && (
@@ -127,15 +123,6 @@ const toc = [
                 </ul>
               </section>
             )
-          )
-        }
-
-        {
-          showGallery && (
-            <section id="gallery" class="place__section">
-              <h2>Gallery</h2>
-              <PlaceGallery placeId={place.id} placeName={d.title} items={galleryItems} verified={d.practical.verified} />
-            </section>
           )
         }
 
@@ -256,6 +243,7 @@ const toc = [
       )
     }
   </article>
+  {hasItinerary && days.some((dy) => dy.stops.some((st) => st.viewable)) && <StopViewer placeName={d.title} days={days} verified={d.practical.verified} />}
 </BaseLayout>
 
 <style>
@@ -314,7 +302,7 @@ const toc = [
     }
   }
   .place__cover figcaption {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--ink-faint);
     padding: 0.6rem 0.2rem 0;
   }
@@ -371,7 +359,7 @@ const toc = [
     border: 1px solid var(--line);
   }
   .highlights__num {
-    font-size: 0.72rem;
+    font-size: 0.76rem;
     letter-spacing: 0.18em;
     color: var(--saffron);
     font-weight: 600;
@@ -491,7 +479,7 @@ const toc = [
     gap: 0.9rem;
   }
   .aside-card dt {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     color: var(--ink-faint);
   }
   .aside-card dd {

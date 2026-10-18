@@ -15,6 +15,19 @@ export const site = {
   // EDITABLE: path to your portrait in /public, e.g. '/images/author/portrait.jpg'.
   authorPhoto: '',
 
+  /**
+   * Home-page hero photograph, shown inside the arch. Replace /public/images/hero.jpg (ideally a
+   * portrait or square photo about spiritual travel in general, around 1200 px wide) or point
+   * `image` at another file. `focus` is the part of the photo that stays in view when it is
+   * cropped, as "x% y%". `quote` is the small card beside the photo; leave it empty to hide it.
+   */
+  hero: {
+    image: '/images/hero.jpg',
+    alt: 'A traveller sitting on a rocky viewpoint at sunrise, looking out over a calm lake and misty mountains',
+    focus: '50% 50%',
+    quote: 'Not just new places, but a new perspective.',
+  },
+
   instagram: {
     handle: '@thespiritualdove',
     url: 'https://www.instagram.com/thespiritualdove/',

@@ -21,7 +21,8 @@ export type SceneName =
   | 'path'
   | 'stillness'
   | 'monastery'
-  | 'yamuna';
+  | 'yamuna'
+  | 'journey';
 
 type Palette = {
   sky: [string, string, string];
@@ -92,6 +93,7 @@ const sceneConfig: Record<SceneName, { palette: keyof typeof palettes; seed: num
   stillness: { palette: 'mist', seed: 41 },
   monastery: { palette: 'day', seed: 43 },
   yamuna: { palette: 'dawn', seed: 47 },
+  journey: { palette: 'dusk', seed: 53 },
 };
 
 const W = 1600;
@@ -141,6 +143,22 @@ function birds(seed: number, color: string, count = 5, area = { x: 300, y: 180, 
     out += `<path d="M${x - s},${y - s * 0.35} Q${x - s * 0.45},${y - s * 0.55} ${x},${y} Q${x + s * 0.45},${y - s * 0.55} ${x + s},${y - s * 0.35}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" opacity="0.7"/>`;
   }
   return out;
+}
+
+/** Doves in flight: soft, light silhouettes. */
+function doves(color: string) {
+  const flock: [number, number, number, number][] = [
+    [780, 250, 1.6, -8],
+    [1010, 150, 1.05, -4],
+    [660, 360, 0.85, -10],
+    [1200, 270, 0.7, -6],
+  ];
+  return flock
+    .map(
+      ([x, y, k, rot]) =>
+        `<g transform="translate(${x} ${y}) rotate(${rot}) scale(${k})" fill="${color}" opacity="0.92"><path d="M0,0 C-10,-14 -28,-20 -46,-13 C-32,-9 -20,-3 -9,6 C-2,11 7,10 13,6 C24,-1 38,-12 50,-21 C35,-22 19,-15 8,-4 C4,-2 2,-1 0,0 Z"/><path d="M12,5 C18,3 24,5 29,9 C23,10 17,9 12,5 Z"/></g>`
+    )
+    .join('');
 }
 
 function shikhara(x: number, base: number, h: number, w: number, c: string) {
@@ -397,6 +415,7 @@ function landmark(scene: SceneName, p: Palette, id: string, seed: number): { bac
       const big = `<g transform="translate(${lx} ${ly}) scale(1.7) translate(${-lx} ${-ly})">${lampSvg}</g>`;
       return { back: stars, front: water(id, wy, p) + reflection(big, wy, id, 0.35) + big };
     }
+    case 'journey':
     case 'path': {
       const hills = `<path d="M-20,${H} L-20,760 C300,720 600,780 900,740 C1200,700 1400,760 1620,730 L1620,${H} Z" fill="${r4}"/>`;
       const trail = `<path d="M560,${H} C620,920 1000,900 940,840 C890,790 760,800 820,770 C860,752 930,752 960,742 L972,744 C950,756 880,762 850,776 C800,800 980,808 1010,850 C1060,920 760,950 760,${H} Z" fill="${p.sky[2]}" opacity="0.75"/>`;
@@ -439,9 +458,9 @@ export function renderScene(scene: SceneName, label: string) {
   const seed = cfg.seed;
 
   const peaky = scene === 'himalaya' || scene === 'valley' || scene === 'monastery';
-  const sunY = scene === 'lamp' ? 170 : scene === 'golden' || scene === 'ghats' ? 380 : 330;
-  const sunX = scene === 'ghats' || scene === 'yamuna' ? 1180 : scene === 'golden' ? 1260 : 470;
-  const sunR = scene === 'lamp' ? 44 : 90;
+  const sunY = scene === 'lamp' ? 170 : scene === 'journey' ? 470 : scene === 'golden' || scene === 'ghats' ? 380 : 330;
+  const sunX = scene === 'ghats' || scene === 'yamuna' ? 1180 : scene === 'golden' ? 1260 : scene === 'journey' ? 1010 : 470;
+  const sunR = scene === 'lamp' ? 44 : scene === 'journey' ? 110 : 90;
 
   const lm = landmark(scene, p, id, seed);
   const hasFarRidges = !['golden', 'lamp', 'stillness', 'island'].includes(scene);
@@ -474,7 +493,8 @@ export function renderScene(scene: SceneName, label: string) {
   ${lm.back ?? ''}
   <circle cx="${sunX}" cy="${sunY}" r="${sunR * 3.4}" fill="url(#sun-${id})"/>
   <circle cx="${sunX}" cy="${sunY}" r="${sunR}" fill="${p.sun}" opacity="0.95"/>
-  ${scene === 'lamp' ? '' : birds(seed, p.ridges[3], 5, { x: sunX + 120, y: sunY - 160, w: 420, h: 140 })}
+  ${scene === 'journey' ? doves('#F7EBDD') : ''}
+  ${scene === 'lamp' || scene === 'journey' ? '' : birds(seed, p.ridges[3], 5, { x: sunX + 120, y: sunY - 160, w: 420, h: 140 })}
   ${ridges}
   ${lm.front}
 </svg>`;

@@ -1,0 +1,554 @@
+---
+import Icon from './Icon.astro';
+import type { Stop } from '../lib/content';
+
+interface Day {
+  day: string;
+  slug: string;
+  stops: Stop[];
+}
+interface Props {
+  placeName: string;
+  days: Day[];
+  verified?: boolean;
+}
+const { placeName, days, verified = false } = Astro.props;
+const sections = [
+  { key: 'find', icon: 'compass', title: 'What you’ll find there' },
+  { key: 'visit', icon: 'route', title: 'How to visit' },
+  { key: 'matters', icon: 'heart', title: 'Why it matters' },
+  { key: 'expect', icon: 'sun', title: 'What to expect when you arrive' },
+] as const;
+---
+<dialog class="stop-dlg" data-stop-dialog aria-label={`${placeName}: photos and guide`}>
+  <div class="stop-dlg__bar">
+    <p class="stop-dlg__counter" data-stop-counter></p>
+    <div class="stop-dlg__nav">
+      <button type="button" data-stop-prev aria-label="Previous stop"><Icon name="arrow-left" size={20} /></button>
+      <button type="button" data-stop-next aria-label="Next stop"><Icon name="arrow-right" size={20} /></button>
+      <button type="button" data-stop-close aria-label="Close"><Icon name="close" size={20} /></button>
+    </div>
+  </div>
+  {
+    days.map((d) => (
+      <div class="stop-tabs" data-day-tabs={d.slug} role="tablist" aria-label={`${d.day} stops`} hidden>
+        {d.stops.map((s) => (
+          <button type="button" role="tab" class="stop-tab" data-tab={s.slug}>
+            {s.name}
+          </button>
+        ))}
+      </div>
+    ))
+  }
+  <div class="stop-dlg__body" data-stop-body>
+    {
+      days.flatMap((d) =>
+        d.stops.map((s, i) => (
+          <article
+            class="stop"
+            data-stop={s.slug}
+            data-day={d.slug}
+            data-has-content={String(s.viewable)}
+            data-label={`${d.day} · ${i + 1} of ${d.stops.length}`}
+            hidden
+            aria-labelledby={`stop-title-${s.slug}`}
+          >
+            <figure class="stop__photo">
+              {s.photos.length > 0 ? (
+                <>
+                  <img src={s.photos[0].src} alt={s.photos[0].caption ?? s.name} loading="lazy" decoding="async" data-main-img />
+                  {s.photos.some((ph) => ph.video) && (
+                    <video class="stop__video" controls playsinline preload="none" hidden data-main-video />
+                  )}
+                  <figcaption class="stop__cap">
+                    <span data-main-caption>{s.photos[0].caption ?? s.name}</span>
+                    <a href={s.photos[0].src} target="_blank" rel="noopener" data-main-full>Open full size</a>
+                  </figcaption>
+                  {s.photos.length > 1 && (
+                    <ul class="stop__thumbs" aria-label={`${s.name} photos`}>
+                      {s.photos.map((ph, pi) => (
+                        <li>
+                          <button
+                            type="button"
+                            data-thumb
+                            data-src={ph.src}
+                            data-caption={ph.caption ?? s.name}
+                            data-video={ph.video}
+                            aria-label={`Show ${ph.video ? 'video' : 'photo'} ${pi + 1}: ${ph.caption ?? s.name}`}
+                            aria-current={pi === 0 ? 'true' : undefined}
+                          >
+                            <img src={ph.src} alt="" loading="lazy" decoding="async" />
+                            {ph.video && (
+                              <span class="stop__play" aria-hidden="true">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </>
+              ) : (
+                <div class="stop__empty">
+                  <Icon name="camera" size={30} />
+                  <span>Photo coming soon</span>
+                </div>
+              )}
+            </figure>
+            <div class="stop__text">
+              <p class="stop__day">{d.day}</p>
+              <h3 id={`stop-title-${s.slug}`}>{s.name}</h3>
+              {s.note && !s.hasGuide && <p class="stop__lead">{s.note}</p>}
+              {s.hasGuide ? (
+                <>
+                  {sections.map((sec) => {
+                    const val = s[sec.key];
+                    if (!val || (Array.isArray(val) && val.length === 0)) return null;
+                    return (
+                      <section class="stop__sec">
+                        <h4>
+                          <Icon name={sec.icon} size={18} />
+                          {sec.title}
+                        </h4>
+                        {Array.isArray(val) ? (
+                          <ul>
+                            {val.map((line) => (
+                              <li>{line}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p>{val}</p>
+                        )}
+                      </section>
+                    );
+                  })}
+                  <p class="stop__caveat">
+                    {verified
+                      ? 'Conditions change, so confirm timings and rules locally before you go.'
+                      : 'General guidance, not yet verified. Timings, rules and access change, so confirm locally before you go.'}
+                  </p>
+                </>
+              ) : (
+                <p class="stop__soon">The guide for this stop is still being written. Check back soon.</p>
+              )}
+            </div>
+          </article>
+        ))
+      )
+    }
+  </div>
+</dialog>
+
+<script>
+  const dlg = document.querySelector<HTMLDialogElement>('[data-stop-dialog]');
+  if (dlg) {
+    const body = dlg.querySelector<HTMLElement>('[data-stop-body]')!;
+    const counter = dlg.querySelector<HTMLElement>('[data-stop-counter]')!;
+    const articles = [...dlg.querySelectorAll<HTMLElement>('[data-stop]')];
+    const tabRows = [...dlg.querySelectorAll<HTMLElement>('[data-day-tabs]')];
+    const prev = dlg.querySelector<HTMLButtonElement>('[data-stop-prev]')!;
+    const next = dlg.querySelector<HTMLButtonElement>('[data-stop-next]')!;
+    let currentDay = '';
+
+    const inDay = (day: string) => articles.filter((a) => a.dataset.day === day);
+
+    // Photo switching inside each stop (thumbnails, videos).
+    articles.forEach((art) => {
+      const main = art.querySelector<HTMLImageElement>('[data-main-img]');
+      const cap = art.querySelector<HTMLElement>('[data-main-caption]');
+      const full = art.querySelector<HTMLAnchorElement>('[data-main-full]');
+      const video = art.querySelector<HTMLVideoElement>('[data-main-video]');
+      const thumbs = [...art.querySelectorAll<HTMLButtonElement>('[data-thumb]')];
+      thumbs.forEach((t) =>
+        t.addEventListener('click', () => {
+          if (!main || !cap) return;
+          const vsrc = t.dataset.video;
+          if (video) {
+            video.pause();
+            if (vsrc) {
+              video.poster = t.dataset.src ?? '';
+              video.src = vsrc;
+            } else {
+              video.removeAttribute('src');
+              video.load();
+            }
+            video.hidden = !vsrc;
+          }
+          main.hidden = Boolean(vsrc);
+          main.src = t.dataset.src ?? '';
+          main.alt = t.dataset.caption ?? '';
+          cap.textContent = t.dataset.caption ?? '';
+          if (full) {
+            full.href = vsrc ?? t.dataset.src ?? '';
+            full.textContent = vsrc ? 'Open video in new tab' : 'Open full size';
+          }
+          thumbs.forEach((o) => o.removeAttribute('aria-current'));
+          t.setAttribute('aria-current', 'true');
+        })
+      );
+    });
+
+    const pauseAll = () => dlg.querySelectorAll<HTMLVideoElement>('video').forEach((v) => v.pause());
+    dlg.addEventListener('close', pauseAll);
+
+    const show = (article: HTMLElement) => {
+      pauseAll();
+      currentDay = article.dataset.day ?? '';
+      articles.forEach((a) => (a.hidden = a !== article));
+      tabRows.forEach((r) => (r.hidden = r.dataset.dayTabs !== currentDay));
+      dlg.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((t) =>
+        t.setAttribute('aria-selected', String(t.dataset.tab === article.dataset.stop && !t.closest<HTMLElement>('[data-day-tabs]')!.hidden))
+      );
+      counter.textContent = article.dataset.label ?? '';
+      article.querySelector<HTMLButtonElement>('[data-thumb]')?.click();
+      body.scrollTop = 0;
+      dlg.querySelector<HTMLElement>('[data-tab][aria-selected="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+    };
+
+    const step = (delta: number) => {
+      const list = inDay(currentDay);
+      const i = list.findIndex((a) => !a.hidden);
+      show(list[(i + delta + list.length) % list.length]);
+    };
+
+    // Open buttons on the page: one per day.
+    document.querySelectorAll<HTMLElement>('[data-day-open]').forEach((btn) =>
+      btn.addEventListener('click', () => {
+        const list = inDay(btn.dataset.dayOpen ?? '');
+        if (!list.length) return;
+        show(list.find((a) => a.dataset.hasContent === 'true') ?? list[0]);
+        if (!dlg.open) dlg.showModal();
+      })
+    );
+    dlg.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((t) =>
+      t.addEventListener('click', () => {
+        const target = articles.find((a) => a.dataset.stop === t.dataset.tab);
+        if (target) show(target);
+      })
+    );
+    prev.addEventListener('click', () => step(-1));
+    next.addEventListener('click', () => step(1));
+    dlg.querySelector('[data-stop-close]')?.addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close();
+    });
+    dlg.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') step(1);
+      if (e.key === 'ArrowLeft') step(-1);
+    });
+  }
+</script>
+
+<style>
+  /* Stop viewer dialog */
+  .stop-dlg {
+    width: min(96vw, 1040px);
+    max-width: none;
+    max-height: 92dvh;
+    padding: 0;
+    border: 0;
+    border-radius: calc(var(--radius) * 1.2);
+    background: var(--paper);
+    color: var(--ink);
+    overflow: hidden;
+    box-shadow: 0 30px 80px -20px rgba(20, 14, 12, 0.6);
+  }
+  .stop-dlg[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .stop-dlg::backdrop {
+    background: rgba(26, 20, 18, 0.72);
+    backdrop-filter: blur(3px);
+  }
+  .stop-dlg__bar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0.8rem 0.6rem 1.4rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--white);
+  }
+  .stop-dlg__counter {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .stop-dlg__nav {
+    display: flex;
+    gap: 0.35rem;
+  }
+  .stop-dlg__nav button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.2s var(--ease), color 0.2s var(--ease);
+  }
+  .stop-dlg__nav button:hover {
+    background: var(--ink);
+    color: var(--white);
+  }
+  .stop-dlg__body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .stop {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .stop__photo,
+  .stop__text {
+    min-width: 0;
+  }
+  .stop[hidden] {
+    display: none;
+  }
+  @media (min-width: 820px) {
+    .stop {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      align-items: start;
+    }
+    .stop__photo {
+      position: sticky;
+      top: 0;
+    }
+  }
+  .stop__photo {
+    margin: 0;
+    background: var(--paper-3);
+  }
+  .stop__photo > img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 64dvh;
+    object-fit: contain;
+    background: #1d1a18;
+  }
+  .stop__photo > img[hidden] {
+    display: none;
+  }
+  .stop__video {
+    display: block;
+    width: 100%;
+    max-height: 64dvh;
+    background: #1d1a18;
+  }
+  .stop__video[hidden] {
+    display: none;
+  }
+  .stop__thumbs button {
+    position: relative;
+  }
+  .stop__play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: var(--white);
+    background: rgba(20, 14, 12, 0.35);
+  }
+  .stop__cap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.3rem 1rem;
+  }
+  .stop__cap a {
+    flex: none;
+    font-size: 0.8rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .stop__photo figcaption {
+    padding: 0.7rem 1rem;
+    background: var(--white);
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+  }
+  .stop__thumbs {
+    list-style: none;
+    margin: 0;
+    padding: 0.7rem 0.8rem 0.8rem;
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    background: var(--white);
+  }
+  .stop__thumbs button {
+    display: block;
+    width: 62px;
+    height: 62px;
+    padding: 0;
+    overflow: hidden;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    background: var(--paper-3);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s var(--ease), border-color 0.2s var(--ease);
+  }
+  .stop__thumbs button:hover {
+    opacity: 1;
+  }
+  .stop__thumbs button[aria-current='true'] {
+    opacity: 1;
+    border-color: var(--saffron);
+  }
+  .stop__thumbs img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  @media (max-width: 819px) {
+    .stop__photo > img {
+      max-height: 52dvh;
+    }
+  }
+  .stop__empty {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.6rem;
+    min-height: 220px;
+    height: 100%;
+    padding: 2rem;
+    color: var(--saffron);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: repeating-linear-gradient(-45deg, #fbf6ee, #fbf6ee 10px, #f7f0e4 10px, #f7f0e4 20px);
+  }
+  @media (min-width: 820px) {
+    .stop__empty {
+      min-height: 420px;
+    }
+  }
+  .stop__text {
+    padding: 1.6rem 1.5rem 2rem;
+  }
+  @media (min-width: 820px) {
+    .stop__text {
+      padding: 2rem 2.2rem 2.4rem;
+    }
+  }
+  .stop__day {
+    margin: 0 0 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--saffron-deep);
+  }
+  .stop__text h3 {
+    font-size: var(--step-3);
+    margin: 0 0 1.2rem;
+  }
+  .stop__sec {
+    padding: 1.1rem 0;
+    border-top: 1px solid var(--line);
+  }
+  .stop__sec h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.55rem;
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .stop__sec h4 :global(svg) {
+    color: var(--saffron);
+  }
+  .stop__sec p,
+  .stop__sec ul {
+    margin: 0;
+    color: #3d3832;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+  .stop__sec ul {
+    padding-left: 1.2rem;
+  }
+  .stop__sec li + li {
+    margin-top: 0.3rem;
+  }
+  .stop__sec li::marker {
+    color: var(--saffron);
+  }
+  .stop__caveat {
+    margin: 0.4rem 0 0;
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-sm);
+    background: #f4efe4;
+    border-left: 3px solid var(--gold);
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+  .stop__soon {
+    padding: 1.2rem 1.3rem;
+    border-radius: var(--radius-sm);
+    border: 1.5px dashed #cdb89c;
+    color: var(--ink-soft);
+    font-size: 0.95rem;
+  }
+
+  .stop-tabs {
+    flex: none;
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+    scrollbar-width: thin;
+  }
+  .stop-tabs[hidden] {
+    display: none;
+  }
+  .stop-tab {
+    flex: none;
+    min-height: 40px;
+    padding: 0.4rem 0.95rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--ink-soft);
+    font: 500 0.9rem/1.2 var(--font-sans);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+  }
+  .stop-tab:hover {
+    border-color: var(--ink-faint);
+    color: var(--ink);
+  }
+  .stop-tab[aria-selected='true'] {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+  }
+  .stop__lead {
+    margin: 0 0 0.6rem;
+    color: var(--ink-soft);
+  }
+</style>
